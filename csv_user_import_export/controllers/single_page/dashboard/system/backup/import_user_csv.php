@@ -8,6 +8,10 @@ use Core;
 
 class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
 {
+    public function view () {
+
+    }
+
     public function select_mapping()
     {
         if (!$this->token->validate('select_mapping')) {
@@ -35,9 +39,10 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $this->set('header', $header);
 
             $options = [
-                '' => t('Ignore'),
-                'uName' => t('User Name'),
-                'uEmail' => t('Email')
+                ''          => t('Ignore'),
+                'uName'     => t('User Name'),
+                'uEmail'    => t('Email'),
+                'gName'    => t('Group Name')
             ];
             $this->set('options', $options);
         } else {
@@ -79,6 +84,8 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                         $uName = $result[$index];
                     } elseif ($akID == 'uEmail') {
                         $uEmail = $result[$index];
+                    } elseif ($akID == 'gName') {
+                        $gName = $result[$index];
                     }
                 }
 
@@ -92,22 +99,45 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 }
 
                 // Add user. Skip, if already exists
-                /** @var \Concrete\Core\User\UserInfo $user */
-                $user = \UserInfo::getByEmail($uEmail);
-                if (!is_object($user)) {
-                    // Add user to database
-                    $data = [
-                        'uName'     => $uName,
-                        'uEmail'    => $uEmail,
-                    ];
-                    /** @var \Concrete\Core\User\RegistrationService $userRegistrationService */
-                    $userRegistrationService = Core::make('Concrete\Core\User\RegistrationServiceInterface');
-                    $ui = $userRegistrationService->create($data);
+                /** @var \Concrete\Core\User\UserInfo $ui */
+                $ui = \UserInfo::getByEmail($uEmail);
+                if (is_object($ui)) {
+                    continue;
+                }
+
+                // Add user to database
+                $data = [
+                    'uName'     => $uName,
+                    'uEmail'    => $uEmail,
+                ];
+                /** @var \Concrete\Core\User\RegistrationService $userRegistrationService */
+                $userRegistrationService = Core::make('Concrete\Core\User\RegistrationServiceInterface');
+                $ui = $userRegistrationService->create($data);
+
+                // Assign user group
+                if ($gName) {
+                    $group = \Group::getByName($gName);
+                    // Add group
+                    if (!$group) {
+                        $group = \Group::add($gName, false);
+                    }
+                    // Add user to the group
+                    $user = $ui->getUserObject();
+                    if (!$user->inGroup($group)) {
+                        $user->enterGroup($group);
+                    }
+
                 }
             }
+            $this->redirect('/dashboard/system/backup/import_user_csv', 'imported');
         } else {
             $this->view();
         }
+    }
 
+    public function imported()
+    {
+        $this->set('message', t('Users imported successfully.'));
+        $this->view();
     }
 }
