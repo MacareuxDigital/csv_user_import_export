@@ -6,6 +6,12 @@
               filename="/dashboard/system/backup/export_user_csv.php"
               pagetype=""
               description=""
-              package="csv_user_import_export" />
+              package="csv_user_import_export"/>
+        <page name="Import User CSV"
+              path="/dashboard/system/backup/import_user_csv"
+              filename="/dashboard/system/backup/import_user_csv.php"
+              pagetype=""
+              description=""
+              package="csv_user_import_export"/>
     </singlepages>
 </concrete5-cif>
