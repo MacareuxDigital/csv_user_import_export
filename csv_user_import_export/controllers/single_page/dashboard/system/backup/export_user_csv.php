@@ -23,7 +23,7 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 'uEmail' => $ui->getUserEmail(),
                 'uTimezone' => $ui->getUserTimezone(),
                 'uDefaultLanguage' => $ui->getUserDefaultLanguage(),
-                'uDateAdded' => $ui->getUserDateAdded(),
+                'uDateAdded' => $ui->getUserDateAdded()->format('Y-m-d H:i:s'),
                 'uLastOnline' => $ui->getLastOnline(),
                 'uLastLogin' => $ui->getLastLogin(),
                 'uLastIP' => $ui->getLastIPAddress(),
