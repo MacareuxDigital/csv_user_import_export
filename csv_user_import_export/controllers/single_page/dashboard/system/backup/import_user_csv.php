@@ -159,9 +159,4 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
         $this->set('message', t('Users imported successfully.'));
         $this->view();
     }
-
-    private function addUserToGroup(User $user, $gName)
-    {
-
-    }
 }
