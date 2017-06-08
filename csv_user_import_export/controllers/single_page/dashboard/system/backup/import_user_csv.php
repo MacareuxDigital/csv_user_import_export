@@ -3,6 +3,7 @@ namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\
 
 
 use Concrete\Core\File\File;
+use Concrete\Core\User\User;
 use League\Csv\Reader;
 use Core;
 
@@ -42,7 +43,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 ''          => t('Ignore'),
                 'uName'     => t('User Name'),
                 'uEmail'    => t('Email'),
-                'gName'    => t('Group Name')
+                'gName'    => t('Group Name/Names')
             ];
             $this->set('options', $options);
         } else {
@@ -77,8 +78,9 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $results = $reader->fetch();
 
             foreach ($results as $key => $result) {
-                $uName = '';
+                $uName  = '';
                 $uEmail = '';
+                $gName  = '';
                 foreach ($mapping as $index => $akID) {
                     if ($akID == 'uName') {
                         $uName = $result[$index];
@@ -116,17 +118,34 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
                 // Assign user group
                 if ($gName) {
-                    $group = \Group::getByName($gName);
-                    // Add group
-                    if (!$group) {
-                        $group = \Group::add($gName, false);
-                    }
-                    // Add user to the group
-                    $user = $ui->getUserObject();
-                    if (!$user->inGroup($group)) {
-                        $user->enterGroup($group);
-                    }
 
+                    // Check if user has multiple group
+                    if (strpos($gName, ',') !== false) {
+                        $gNames = explode(',', $gName);
+                        foreach ($gNames as $gName) {
+                            $group = \Group::getByName($gName);
+                            // Add group
+                            if (!$group) {
+                                $group = \Group::add($gName, false);
+                            }
+                            // Add user to the group
+                            $user = $ui->getUserObject();
+                            if (!$user->inGroup($group)) {
+                                $user->enterGroup($group);
+                            }
+                        }
+                    } else {
+                        $group = \Group::getByName($gName);
+                        // Add group
+                        if (!$group) {
+                            $group = \Group::add($gName, false);
+                        }
+                        // Add user to the group
+                        $user = $ui->getUserObject();
+                        if (!$user->inGroup($group)) {
+                            $user->enterGroup($group);
+                        }
+                    }
                 }
             }
             $this->redirect('/dashboard/system/backup/import_user_csv', 'imported');
@@ -139,5 +158,10 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
     {
         $this->set('message', t('Users imported successfully.'));
         $this->view();
+    }
+
+    private function addUserToGroup(User $user, $gName)
+    {
+
     }
 }
