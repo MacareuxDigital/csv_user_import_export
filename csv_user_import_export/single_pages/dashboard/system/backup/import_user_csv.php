@@ -6,18 +6,18 @@
         <?=$this->controller->token->output('import')?>
         <table class="table">
             <thead>
-            <tr>
-                <th><?=t('CSV Header');?></th>
-                <th><?=t('Maps To');?></th>
-            </tr>
+                <tr>
+                    <th><?=t('Maps To');?></th>
+                    <th><?=t('CSV Header');?></th>
+                </tr>
             </thead>
             <tbody>
-            <?php foreach ($header as $index => $row) { ?>
-                <tr>
-                    <td><?=$row?></td>
-                    <td><?=$form->select('mapping[]', $options)?></td>
-                </tr>
-            <?php } ?>
+                <?php foreach ($columns as $field => $column): ?>
+                    <tr>
+                        <td><?= $column ?></td>
+                        <td><?= $form->select($field, $header, false, ['default' => 'Please select']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
 
