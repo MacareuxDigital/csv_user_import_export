@@ -37,15 +37,11 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
         if (!$this->error->has()) {
             $this->set('f', $f);
+            $header =[0 => 'Ignore'] + $header;
             $this->set('header', $header);
 
-            $options = [
-                ''          => t('Ignore'),
-                'uName'     => t('User Name'),
-                'uEmail'    => t('Email'),
-                'gName'    => t('Group Name/Names')
-            ];
-            $this->set('options', $options);
+            $columns = $this->getColumns();
+            $this->set('columns', $columns);
         } else {
             $this->view();
         }
@@ -76,29 +72,33 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $mapping = $this->request->request->get('mapping');
             $reader->setOffset(1);
             $results = $reader->fetch();
+            $columns = $this->getColumns();
 
             foreach ($results as $key => $result) {
-                $uName  = '';
-                $uEmail = '';
-                $gName  = '';
-                foreach ($mapping as $index => $akID) {
-                    if ($akID == 'uName') {
-                        $uName = $result[$index];
-                    } elseif ($akID == 'uEmail') {
-                        $uEmail = $result[$index];
-                    } elseif ($akID == 'gName') {
-                        $gName = $result[$index];
+
+                foreach ($columns as $field => $column) {
+                    $$field = '';
+                    if ($this->post($field)) {
+                        $$field = $result[$this->post($field)];
                     }
                 }
 
                 // Skip, if email is empty
-                if (!$uEmail) {
+//                echo 'uEmail: ' . $uEmail . '<br>';
+                // TODO: Email validation
+                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null' ) {
                     continue;
                 }
 
-                if (!$uName) {
-                    $uName = str_replace('@', '.', $uEmail);
+                // Generate username
+                // @TODO:username validation
+                if (!$uName || strtolower($uName) == 'null') {
+                    $uName = time() . str_replace('@', '.', $uEmail);
                 }
+                $uName = trim($uName);
+                $uName = preg_replace("/[\s\+]/", ".", $uName);
+                if(strlen($uName) > 64) $uName = substr($uName, 64);
+//                echo 'uName: ' . $uName . '<br>';
 
                 // Add user. Skip, if already exists
                 /** @var \Concrete\Core\User\UserInfo $ui */
@@ -117,7 +117,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 $ui = $userRegistrationService->create($data);
 
                 // Assign user group
-                if ($gName) {
+                if (isset($gName) && $gName) {
 
                     // Check if user has multiple group
                     if (strpos($gName, ',') !== false) {
@@ -158,5 +158,20 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
     {
         $this->set('message', t('Users imported successfully.'));
         $this->view();
+    }
+
+
+    /**
+     * @return array
+     * Please add the columns here you want to import
+     * TODO: get from config file
+     */
+    protected function getColumns() {
+        return $columns = [
+            'uName'         => 'Username',
+            'uEmail'        => 'User Email',
+            'uDisplayName'  => 'User Display Name',
+            'gName'         => 'User Group Name'
+        ];
     }
 }
