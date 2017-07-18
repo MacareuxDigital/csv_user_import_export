@@ -6,6 +6,7 @@ use Concrete\Core\File\File;
 use Concrete\Core\User\User;
 use League\Csv\Reader;
 use Core;
+use UserAttributeKey;
 
 class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
 {
@@ -147,6 +148,19 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                         }
                     }
                 }
+
+                // Add user custom attributes
+                $aks = UserAttributeKey::getRegistrationList();
+                $akHandles = [];
+                foreach ($aks as $ak) {
+                    $akHandles[] = $ak->getAttributeKeyHandle();
+                }
+
+                foreach ($columns as $handle => $column) {
+                    if (in_array($handle, $akHandles) && $$handle) {
+                        $ui->setAttribute($handle, $$handle);
+                    }
+                }
             }
             $this->redirect('/dashboard/system/backup/import_user_csv', 'imported');
         } else {
@@ -171,7 +185,10 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             'uName'         => 'Username',
             'uEmail'        => 'User Email',
             'uDisplayName'  => 'User Display Name',
-            'gName'         => 'User Group Name'
+            'gName'         => 'User Group Name',
+            'firstname'     => 'First Name',
+            'phonic_name'   => 'Phonetic Name',
+            'zip_code'      => 'Zip Code'
         ];
     }
 }
