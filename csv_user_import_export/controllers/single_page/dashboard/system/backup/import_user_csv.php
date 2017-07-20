@@ -85,21 +85,16 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 }
 
                 // Skip, if email is empty
-//                echo 'uEmail: ' . $uEmail . '<br>';
                 // TODO: Email validation
                 if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null' ) {
                     continue;
                 }
 
                 // Generate username
-                // @TODO:username validation
                 if (!$uName || strtolower($uName) == 'null') {
-                    $uName = time() . str_replace('@', '.', $uEmail);
+                    $userService = $this->app->make(\Concrete\Core\Application\Service\User::class);
+                    $uName = $userService->generateUsernameFromEmail($_POST['uEmail']);
                 }
-                $uName = trim($uName);
-                $uName = preg_replace("/[\s\+]/", ".", $uName);
-                if(strlen($uName) > 64) $uName = substr($uName, 64);
-//                echo 'uName: ' . $uName . '<br>';
 
                 // Add user. Skip, if already exists
                 /** @var \Concrete\Core\User\UserInfo $ui */
