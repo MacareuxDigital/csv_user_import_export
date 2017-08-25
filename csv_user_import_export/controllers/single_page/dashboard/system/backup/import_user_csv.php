@@ -38,7 +38,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
         if (!$this->error->has()) {
             $this->set('f', $f);
-            $header =[0 => 'Ignore'] + $header;
+            array_unshift($header, 'Ignore');
             $this->set('header', $header);
 
             $columns = $this->getColumns();
@@ -80,7 +80,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 foreach ($columns as $field => $column) {
                     $$field = '';
                     if ($this->post($field)) {
-                        $$field = $result[$this->post($field)];
+                        $$field = $result[$this->post($field)-1];
                     }
                 }
 
