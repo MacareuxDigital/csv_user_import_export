@@ -33,7 +33,13 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 'uNumLogins' => $ui->getNumLogins(),
             );
             foreach ($akl as $ak) {
-                $uArray[$ak->getAttributeKeyDisplayName()] = $ui->getAttribute($ak, true);
+                $attributeValue = $ui->getAttribute($ak, true);
+                // Remove the <br/> tag for select type
+                // @see \Concrete\Attribute\Select\Controller::getDisplayValue()
+                if ($ak->getAttributeType()->getAttributeTypeHandle() === 'select') {
+                    $attributeValue = str_replace('<br/>', '', $attributeValue);
+                }
+                $uArray[$ak->getAttributeKeyDisplayName()] = $attributeValue;
             }
             $users[] = $uArray;
             unset($uArray);
