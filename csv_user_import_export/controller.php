@@ -15,7 +15,7 @@ class Controller extends Package
     /**
      * @var string Required concrete5 version.
      */
-    protected $appVersionRequired = '8.2.0';
+    protected $appVersionRequired = '5.7.5.13';
 
     /**
      * @var string Package version.

@@ -12,6 +12,8 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 {
     public function export()
     {
+        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+
         $list = new UserList();
         $results = $list->getResults();
         $users = array();
@@ -23,7 +25,7 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 'uEmail' => $ui->getUserEmail(),
                 'uTimezone' => $ui->getUserTimezone(),
                 'uDefaultLanguage' => $ui->getUserDefaultLanguage(),
-                'uDateAdded' => $ui->getUserDateAdded()->format('Y-m-d H:i:s'),
+                'uDateAdded' => is_object($ui->getUserDateAdded()) ? $ui->getUserDateAdded()->format('Y-m-d H:i:s') : '',
                 'uLastOnline' => $ui->getLastOnline(),
                 'uLastLogin' => $ui->getLastLogin(),
                 'uLastIP' => $ui->getLastIPAddress(),
