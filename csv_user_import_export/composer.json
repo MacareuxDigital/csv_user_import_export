@@ -1,5 +1,6 @@
 {
     "require": {
-        "ddeboer/data-import": "@stable"
+        "ddeboer/data-import": "@stable",
+        "league/csv": "^9.2"
     }
 }
