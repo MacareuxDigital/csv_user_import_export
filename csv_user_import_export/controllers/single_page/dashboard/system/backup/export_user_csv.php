@@ -1,65 +1,36 @@
 <?php
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
-use Core;
+use C5j\User\CsvWriter;
+use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\User\UserList;
-use Ddeboer\DataImport\Workflow\StepAggregator;
-use Ddeboer\DataImport\Reader\ArrayReader;
-use Ddeboer\DataImport\Writer\CsvWriter;
-use UserAttributeKey;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
+class ExportUserCsv extends DashboardPageController
 {
     public function export()
     {
-        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-
-        $list = new UserList();
-        $results = $list->getResults();
-        $users = array();
-        $akl = UserAttributeKey::getList();
-        foreach ($results as $ui) {
-            $uArray = array(
-                'uID' => $ui->getUserID(),
-                'uName' => $ui->getUserName(),
-                'uEmail' => $ui->getUserEmail(),
-                'uTimezone' => $ui->getUserTimezone(),
-                'uDefaultLanguage' => $ui->getUserDefaultLanguage(),
-                'uDateAdded' => is_object($ui->getUserDateAdded()) ? $ui->getUserDateAdded()->format('Y-m-d H:i:s') : '',
-                'uLastOnline' => $ui->getLastOnline(),
-                'uLastLogin' => $ui->getLastLogin(),
-                'uLastIP' => $ui->getLastIPAddress(),
-                'uPreviousLogin' => $ui->getPreviousLogin(),
-                'uIsActive' => $ui->isActive(),
-                'uIsValidated' => $ui->isValidated(),
-                'uNumLogins' => $ui->getNumLogins(),
-            );
-            foreach ($akl as $ak) {
-                $attributeValue = $ui->getAttribute($ak, true);
-                // Remove the <br/> tag for select type
-                // @see \Concrete\Attribute\Select\Controller::getDisplayValue()
-                if ($ak->getAttributeType()->getAttributeTypeHandle() === 'select') {
-                    $attributeValue = str_replace('<br/>', '', $attributeValue);
-                }
-                $uArray[$ak->getAttributeKeyDisplayName()] = $attributeValue;
-            }
-            $users[] = $uArray;
-            unset($uArray);
+        if (!$this->token->validate('export')) {
+            $this->error = $this->error->add($this->token->getErrorMessage());
         }
 
-        /** @var Concrete\Core\File\Service\File $fileHelper */
-        $fileHelper = Core::make('helper/file');
-        $downloadfile = $fileHelper->getTemporaryDirectory() . '/export_user_' . time() . '.csv';
-        $fileHelper->clear($downloadfile);
-        if (file_exists($downloadfile) && count($users)) {
-            $reader = new ArrayReader($users);
-            $workflow = new StepAggregator($reader);
-            $writer = new CsvWriter(',', '""', fopen($downloadfile, 'w'), true, true);
-            $result = $workflow->addWriter($writer)
-                ->setSkipItemOnFailure(true)
-                ->process();
-            $fileHelper->forceDownload($downloadfile);
-            @unlink($downloadfile);
+        if ($this->error->has()) {
+            $this->set('error', $this->error);
+            return;
         }
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=export_user_' . date('Ymd') . '.csv',
+        ];
+
+        return StreamedResponse::create(function () {
+            $list = new UserList();
+            $writer = new CsvWriter();
+            $config = $this->app->make('config');
+            echo $config->get('concrete.export.csv.include_bom') ? $config->get('concrete.charset_bom') : '';
+            $writer->insertHeaders();
+            $writer->insertRecords($list);
+        }, 200, $headers);
     }
 }

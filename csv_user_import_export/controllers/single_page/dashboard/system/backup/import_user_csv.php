@@ -1,7 +1,7 @@
 <?php
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
-use Concrete\Core\Attribute\Key\Key;
+use C5j\User\Columns;
 use Concrete\Core\File\File;
 use Concrete\Core\File\Version;
 use Concrete\Core\Page\Controller\DashboardPageController;
@@ -43,7 +43,7 @@ class ImportUserCsv extends DashboardPageController
 
         if (!$this->error->has()) {
             $csvHeader = array_merge([0 => 'Select..'], array_combine($csvHeader, $csvHeader));
-            $headers = iterator_to_array($this->getHeaders());
+            $headers = iterator_to_array((new Columns())->getHeaders());
         }
 
         $this->set('fID', $fID);
@@ -74,7 +74,7 @@ class ImportUserCsv extends DashboardPageController
         if (!$this->error->has()) {
             set_time_limit(300);
             $records = $csv->getRecords($csvHeader);
-            $headers = iterator_to_array($this->getHeaders());
+            $headers = iterator_to_array((new Columns())->getHeaders());
 
             foreach ($records as $record) {
                 foreach ($headers as $handle => $name) {
@@ -161,53 +161,6 @@ class ImportUserCsv extends DashboardPageController
             $this->set('error', $this->error);
             $this->view();
         }
-    }
-
-    protected function getHeaders()
-    {
-        // Static headers
-        // $headers = [t('Username'), t('Email'), t('Signup Date'), t('Status'), t('# Logins')];
-
-        $headers = [
-            'uID' => t('User ID'),
-            'uName' => t('User Name'),
-            'uEmail' => t('User Email'),
-            'uTimeZone' => t('Time Zone'),
-            'uDefaultLanguage' => t('Default Language'),
-            'uDateAdded' => t('Date Added'),
-            'uLastOnline' => t('Last Online'),
-            'uLastLogin' => t('Last Login'),
-            'uLastIP' => t('Last IP'),
-            'uPreviousLogin' => t('Previous Login'),
-            'uIsActive' => t('Is Active'),
-            'uIsValidated' => t('Is Validated'),
-            'uNumLogins' => t('Num of Logins'),
-            'gName' => 'User Group',
-        ];
-
-        foreach ($headers as $handle => $name) {
-            yield $handle => $name;
-        }
-
-        // Get headers for User attributes
-        $attributes = $this->getAttributeKeys();
-        foreach ($attributes as $attribute) {
-            yield $attribute->getAttributeKeyHandle() => $attribute->getAttributeKeyDisplayName();
-        }
-    }
-
-    /**
-     * Memoize the attribute keys so that we aren't looking them up over and over.
-     *
-     * @return array|Key[]
-     */
-    private function getAttributeKeys()
-    {
-        if (!isset($this->attributeKeys)) {
-            $this->attributeKeys = UserAttributeKey::getList();
-        }
-
-        return $this->attributeKeys;
     }
 
     public function imported()

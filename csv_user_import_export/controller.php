@@ -27,6 +27,10 @@ class Controller extends Package
      */
     protected $pkgAutoloaderMapCoreExtensions = true;
 
+    protected $pkgAutoloaderRegistries = [
+        'src/C5j' => '\C5j',
+    ];
+
     /**
      * Returns the translated package description.
      *
