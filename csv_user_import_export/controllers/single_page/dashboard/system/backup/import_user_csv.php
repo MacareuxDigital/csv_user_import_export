@@ -93,8 +93,7 @@ class ImportUserCsv extends DashboardPageController
 
                 // Generate username if it's not exists
                 if (!$uName || strtolower($uName) == 'null') {
-                    $userService = $this->app->make(\Concrete\Core\Application\Service\User::class);
-                    $uName = $userService->generateUsernameFromEmail($this->request('uEmail'));
+                    $uName = $this->generateUsernameFromEmail($this->request('uEmail'));
                 }
 
                 // Add user. Skip, if already exists
@@ -187,5 +186,21 @@ class ImportUserCsv extends DashboardPageController
         }
 
         return $reader;
+    }
+
+    private function generateUsernameFromEmail($email)
+    {
+        $db = \Database::connection();
+        $prefix = substr($email, 0, strpos($email, '@'));
+        $numberOfUsers = 1;
+        while ($numberOfUsers > 0) {
+            $letters = '123456789abcdefghijklmnopqrstuvwxyz';
+            $letters = str_repeat($letters, 3);
+            $suffix = substr(str_shuffle($letters), 0, 3);
+            $uName = $prefix . $suffix;
+            $numberOfUsers = $db->GetOne('select count(uID) from Users where uName = ?', [$uName]);
+        }
+
+        return $uName;
     }
 }
