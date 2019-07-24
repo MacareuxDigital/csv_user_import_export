@@ -33,8 +33,8 @@ class ImportUserCsv extends DashboardPageController
         if ($file) {
             // Validate the csv file
             $csv = $this->getCsvReader($file);
-            $csv->setHeaderOffset(0);
-            $csvHeader = array_map('trim', $csv->getHeader());
+            $csv->setOffset(0);
+            $csvHeader = array_map('trim', $csv->fetchOne());
         }
 
         if (!is_array($csvHeader)) {
@@ -64,8 +64,8 @@ class ImportUserCsv extends DashboardPageController
             $this->error->add(t('Invalid file.'));
         } else {
             $csv = $this->getCsvReader($f);
-            $csv->setHeaderOffset(0);
-            $csvHeader = array_map('trim', $csv->getHeader());
+            $csv->setOffset(0);
+            $csvHeader = array_map('trim', $csv->fetchOne());
             if (!is_array($csvHeader)) {
                 $this->error->add(t('Invalid file.'));
             }
@@ -73,7 +73,8 @@ class ImportUserCsv extends DashboardPageController
 
         if (!$this->error->has()) {
             set_time_limit(300);
-            $records = $csv->getRecords($csvHeader);
+            $csv->setOffset(1);
+            $records = $csv->fetchAssoc($csvHeader);
             $headers = iterator_to_array((new Columns())->getHeaders());
 
             foreach ($records as $record) {
