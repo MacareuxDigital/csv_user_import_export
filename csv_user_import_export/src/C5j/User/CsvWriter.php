@@ -10,6 +10,7 @@
  */
 namespace C5j\User;
 
+use Concrete\Core\User\Group\Group;
 use Concrete\Core\User\UserInfo;
 use Concrete\Core\User\UserList;
 use League\Csv\Writer;
@@ -61,6 +62,13 @@ class CsvWriter
         yield $user->isActive() ? 'active' : 'inactive';
         yield $user->isValidated();
         yield $user->getNumLogins();
+        $groupNames = [];
+        $groups = $user->getUserObject()->getUserGroupObjects();
+        /** @var Group $group */
+        foreach ((array)$groups as $group) {
+            $groupNames[] = $group->getGroupName();
+        }
+        yield $groupNames ? implode(',', $groupNames) : '';
 
         $attributes = $this->columns->getAttributeKeys();
         foreach ($attributes as $attribute) {
