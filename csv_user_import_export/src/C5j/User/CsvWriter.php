@@ -70,10 +70,18 @@ class CsvWriter
         }
         yield $groupNames ? implode(',', $groupNames) : '';
 
-        $attributes = $this->columns->getAttributeKeys();
-        foreach ($attributes as $attribute) {
-            $value = $user->getAttributeValueObject($attribute);
-            yield $value ? $value->getValue('display') : '';
+        $attributeKeys = $this->columns->getAttributeKeys();
+        foreach ($attributeKeys as $attributeKey) {
+            $attributeValueObject = $user->getAttributeValueObject($attributeKey);
+            $attributeValue = $attributeValueObject ? $attributeValueObject->getValue('display') : '';
+
+            // Remove the <br/> tag for select type
+            // @see \Concrete\Attribute\Select\Controller::getDisplayValue()
+            if ($attributeKey->getAttributeType()->getAttributeTypeHandle() === 'select') {
+                $attributeValue = str_replace('<br/>', '', $attributeValue);
+            }
+
+            yield $attributeValue;
         }
     }
 }
