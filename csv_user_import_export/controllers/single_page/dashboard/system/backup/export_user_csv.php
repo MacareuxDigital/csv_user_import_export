@@ -19,6 +19,8 @@ class ExportUserCsv extends DashboardPageController
             return;
         }
 
+        ini_set('max_execution_time', '0'); // for infinite time of execution
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=export_user_' . date('Ymd') . '.csv',
