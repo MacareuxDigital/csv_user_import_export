@@ -54,7 +54,15 @@ class CsvWriter
         yield $user->getUserEmail();
         yield $user->getUserTimezone();
         yield $user->getUserDefaultLanguage();
-        yield is_object($user->getUserDateAdded()) ? $user->getUserDateAdded()->format('Y-m-d H:i:s') : '';
+
+        $dateAdded = '';
+        if (is_object($user->getUserDateAdded())) {
+            $dateAdded = $user->getUserDateAdded()->format('Y-m-d H:i:s');
+        } elseif (is_string($user->getUserDateAdded())) {
+            $dateAdded = $user->getUserDateAdded();
+        }
+        yield $dateAdded;
+
         yield $user->getLastOnline();
         yield $user->getLastLogin();
         yield $user->getLastIPAddress();
