@@ -11,8 +11,6 @@ use Package;
 
 class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
 {
-    protected $pkg;
-
     public function view () {
 
     }
