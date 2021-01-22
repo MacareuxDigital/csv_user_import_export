@@ -7,9 +7,12 @@ use Concrete\Core\User\User;
 use League\Csv\Reader;
 use Core;
 use UserAttributeKey;
+use Package;
 
 class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
 {
+    protected $pkg;
+
     public function view () {
 
     }
@@ -86,7 +89,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
                 // Skip, if email is empty
                 // TODO: Email validation
-                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null' ) {
+                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null'  || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
 
@@ -103,10 +106,15 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                     continue;
                 }
 
+                if (!isset($uPassword) || empty($uPassword)){
+                    $uPassword = \Concrete\Core\Utility\Service\Identifier::getString();
+                }
+
                 // Add user to database
                 $data = [
                     'uName'     => $uName,
                     'uEmail'    => $uEmail,
+                    'uPassword' => $uPassword,
                 ];
                 /** @var \Concrete\Core\User\RegistrationService $userRegistrationService */
                 $userRegistrationService = Core::make('Concrete\Core\User\RegistrationServiceInterface');
@@ -176,14 +184,8 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
      * TODO: get from config file
      */
     protected function getColumns() {
-        return $columns = [
-            'uName'         => 'Username',
-            'uEmail'        => 'User Email',
-            'uDisplayName'  => 'User Display Name',
-            'gName'         => 'User Group Name',
-            'firstname'     => 'First Name',
-            'phonic_name'   => 'Phonetic Name',
-            'zip_code'      => 'Zip Code'
-        ];
+        $packageObject = Package::getByHandle('csv_user_import_export');
+        $columns = $packageObject->getFileConfig()->get('csv_header.columns');
+        return $columns;
     }
 }
