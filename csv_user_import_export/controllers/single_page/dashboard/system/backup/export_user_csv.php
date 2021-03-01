@@ -1,10 +1,11 @@
 <?php
+
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
-use Core;
 use Concrete\Core\User\UserList;
-use Ddeboer\DataImport\Workflow\StepAggregator;
+use Core;
 use Ddeboer\DataImport\Reader\ArrayReader;
+use Ddeboer\DataImport\Workflow\StepAggregator;
 use Ddeboer\DataImport\Writer\CsvWriter;
 use UserAttributeKey;
 
@@ -14,10 +15,10 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
     {
         $list = new UserList();
         $results = $list->getResults();
-        $users = array();
+        $users = [];
         $akl = UserAttributeKey::getList();
         foreach ($results as $ui) {
-            $uArray = array(
+            $uArray = [
                 'uID' => $ui->getUserID(),
                 'uName' => $ui->getUserName(),
                 'uEmail' => $ui->getUserEmail(),
@@ -31,7 +32,7 @@ class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 'uIsActive' => $ui->isActive(),
                 'uIsValidated' => $ui->isValidated(),
                 'uNumLogins' => $ui->getNumLogins(),
-            );
+            ];
             foreach ($akl as $ak) {
                 $attributeValue = $ui->getAttribute($ak, true);
                 // Remove the <br/> tag for select type

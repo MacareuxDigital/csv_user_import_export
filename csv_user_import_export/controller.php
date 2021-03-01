@@ -1,29 +1,30 @@
 <?php
+
 namespace Concrete\Package\CsvUserImportExport;
 
 use Concrete\Core\Backup\ContentImporter;
-use Package;
 use Exception;
+use Package;
 
 class Controller extends Package
 {
     /**
-     * @var string Package handle.
+     * @var string package handle
      */
     protected $pkgHandle = 'csv_user_import_export';
 
     /**
-     * @var string Required concrete5 version.
+     * @var string required concrete5 version
      */
     protected $appVersionRequired = '8.2.0';
 
     /**
-     * @var string Package version.
+     * @var string package version
      */
     protected $pkgVersion = '0.1.1';
 
     /**
-     * @var boolean Remove \Src from package namespace.
+     * @var bool remove \Src from package namespace
      */
     protected $pkgAutoloaderMapCoreExtensions = true;
 
@@ -48,12 +49,12 @@ class Controller extends Package
     }
 
     /**
-     * Package install process
+     * Package install process.
      */
     public function install()
     {
         if (!file_exists($autoLoader = $this->getPackagePath() . '/vendor/autoload.php')) {
-            throw new Exception( t('Install the libs first. Run, composer install from this package home directory.'));
+            throw new Exception(t('Install the libs first. Run, composer install from this package home directory.'));
         }
         $pkg = parent::install();
         $ci = new ContentImporter();
@@ -69,7 +70,7 @@ class Controller extends Package
     }
 
     /**
-     * Package startup process
+     * Package startup process.
      */
     public function on_start()
     {
