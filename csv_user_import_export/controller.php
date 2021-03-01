@@ -59,6 +59,16 @@ class Controller extends Package
         $pkg = parent::install();
         $ci = new ContentImporter();
         $ci->importContentFile($pkg->getPackagePath() . '/config/singlepages.xml');
+        $defaultSettings = [
+            'uName' => 'Username',
+            'uEmail' => 'User Email',
+            'uDisplayName' => 'User Display Name',
+            'gName' => 'User Group Name',
+            'firstname' => 'First Name',
+            'phonic_name' => 'Phonetic Name',
+            'zip_code' => 'Zip Code',
+        ];
+        $pkg->getFileConfig()->save('csv_header.columns', $defaultSettings);
     }
 
     public function upgrade()
