@@ -1,18 +1,18 @@
 <?php
-namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
+namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
 use Concrete\Core\File\File;
 use Concrete\Core\User\User;
-use League\Csv\Reader;
 use Core;
-use UserAttributeKey;
+use League\Csv\Reader;
 use Package;
+use UserAttributeKey;
 
 class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
 {
-    public function view () {
-
+    public function view()
+    {
     }
 
     public function select_mapping()
@@ -26,7 +26,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
         if (!is_object($f)) {
             $this->error->add(t('Invalid file.'));
         } else {
-            ini_set("auto_detect_line_endings", true);
+            ini_set('auto_detect_line_endings', true);
 
             $resource = $f->getFileResource();
             $reader = Reader::createFromStream($resource->readStream());
@@ -60,7 +60,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
         if (!is_object($f)) {
             $this->error->add(t('Invalid file.'));
         } else {
-            ini_set("auto_detect_line_endings", true);
+            ini_set('auto_detect_line_endings', true);
             $resource = $f->getFileResource();
             $reader = Reader::createFromStream($resource->readStream());
             $header = $reader->fetchOne();
@@ -77,16 +77,15 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $columns = $this->getColumns();
 
             foreach ($results as $key => $result) {
-
                 foreach ($columns as $field => $column) {
                     $$field = '';
                     if ($this->post($field)) {
-                        $$field = $result[$this->post($field)-1];
+                        $$field = $result[$this->post($field) - 1];
                     }
                 }
 
                 // Skip, if email is empty
-                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null'  || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
+                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null' || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
 
@@ -103,15 +102,15 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                     continue;
                 }
 
-                if (!isset($uPassword) || empty($uPassword)){
+                if (!isset($uPassword) || empty($uPassword)) {
                     $identifier = Core::make('helper/validation/identifier');
                     $uPassword = $identifier->getString();
                 }
 
                 // Add user to database
                 $data = [
-                    'uName'     => $uName,
-                    'uEmail'    => $uEmail,
+                    'uName' => $uName,
+                    'uEmail' => $uEmail,
                     'uPassword' => $uPassword,
                 ];
                 /** @var \Concrete\Core\User\RegistrationService $userRegistrationService */
@@ -175,19 +174,18 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
         $this->view();
     }
 
-
     /**
      * @return array
      * Please add the columns here you want to import
-     * TODO: get from config file
      */
-    protected function getColumns() {
+    protected function getColumns()
+    {
         $packageObject = Package::getByHandle('csv_user_import_export');
         $columns = $packageObject->getFileConfig()->get('csv_header.columns');
-        if(!empty( $columns ) && is_array( $columns )){
+        if (!empty($columns) && is_array($columns)) {
             return $columns;
-        }else{
-            return [];
         }
+
+        return [];
     }
 }
