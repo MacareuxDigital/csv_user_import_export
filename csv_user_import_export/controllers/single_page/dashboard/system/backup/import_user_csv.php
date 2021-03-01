@@ -86,7 +86,6 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 }
 
                 // Skip, if email is empty
-                // TODO: Email validation
                 if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null'  || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
@@ -105,7 +104,8 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 }
 
                 if (!isset($uPassword) || empty($uPassword)){
-                    $uPassword = \Concrete\Core\Utility\Service\Identifier::getString();
+                    $identifier = Core::make('helper/validation/identifier');
+                    $uPassword = $identifier->getString();
                 }
 
                 // Add user to database
@@ -184,6 +184,10 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
     protected function getColumns() {
         $packageObject = Package::getByHandle('csv_user_import_export');
         $columns = $packageObject->getFileConfig()->get('csv_header.columns');
-        return $columns;
+        if(!empty( $columns ) && is_array( $columns )){
+            return $columns;
+        }else{
+            return [];
+        }
     }
 }
