@@ -27,14 +27,10 @@
             var input = $(this).parents("tr").find('input[type="text"]');
             input.each(function(){
                 if(!$(this).val()){
-                    $(this).addClass("error");
                     empty = true;
-                    alert("データを入力してください。");
-                } else{
-                    $(this).removeClass("error");
                 }
             });
-            $(this).parents("tr").find(".error").first().focus();
+
             if(!empty){
                 input.each(function(){
                     $(this).parent("td").html($(this).val());
@@ -43,13 +39,18 @@
                 $(".add-new").removeAttr("disabled");
 
                 AddConfigData();
+            }else{
+                ConcreteAlert.dialog(<?=json_encode(t('Error'))?>, <?=json_encode(t('The data is empty'))?>);
             }
         });
 
         // Edit row on edit button click
         $(document).on("click", ".edit", function(){
+            var index = $(this).parents("tr").index();
             $(this).parents("tr").find("td:not(:last-child)").each(function(key){
-                $(this).html('<input type="text" class="form-control" value="' + $(this).text() + '">');
+                var inner_text = $(this).text();
+                $(this).html('<input id="config'+index+key+ '" type="text" class="form-control">');
+                $("#config"+index+key).val(inner_text);
             });
             $(this).parents("tr").find(".add, .edit").toggle();
         });
@@ -61,7 +62,7 @@
 
             if(name !== null && handle !== null){
                 $.ajax({
-                    url: "<?= $view->action('DeleteConfig') ?>",
+                    url: "<?= $view->action('deleteConfig', $token->generate('perform_delete')) ?>",
                     data: {"name":name,"handle":handle},
                     type: 'post',
                     success: function(response) {
@@ -70,7 +71,6 @@
                 });
             }
             $(this).parents("tr").remove();
-            $(".add-new").removeAttr("disabled");
         });
 
         function AddConfigData(){
@@ -85,7 +85,7 @@
             if(Object.keys(config_data).length > 0){
 
                 $.ajax({
-                    url: "<?= $view->action('AddConfig') ?>",
+                    url: "<?= $view->action('addConfig', $token->generate('perform_add')) ?>",
                     data: {"config_data":config_data},
                     type: 'post',
                     success: function(response) {
@@ -122,9 +122,9 @@
                     <td><?= h($column) ?></td>
                     <td><?= h($field) ?></td>
                     <td>
-                        <a href="#" class="btn btn-default btn-sm btn-primary add"><?=t('Add')?></a>
-                        <a href="#" class="btn btn-default btn-sm btn-primary edit"><?=t('Edit')?></a>
-                        <a href="#" class="btn btn-default btn-sm btn-danger delete"><?=t('Delete')?></a>
+                        <span class="btn btn-default btn-sm btn-primary add"><?=t('Add')?></span>
+                        <span class="btn btn-default btn-sm btn-primary edit"><?=t('Edit')?></span>
+                        <span class="btn btn-default btn-sm btn-danger delete"><?=t('Delete')?></span>
                     </td>
                 </tr>
             <?php endforeach; ?>
