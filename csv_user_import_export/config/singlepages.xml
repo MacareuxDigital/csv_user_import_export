@@ -13,5 +13,11 @@
               pagetype=""
               description=""
               package="csv_user_import_export"/>
+        <page name="CSV Header"
+              path="/dashboard/system/backup/import_user_csv/change_csv_config"
+              filename="/dashboard/system/backup/import_user_csv/change_csv_config.php"
+              pagetype=""
+              description=""
+              package="csv_user_import_export"/>
     </singlepages>
 </concrete5-cif>
