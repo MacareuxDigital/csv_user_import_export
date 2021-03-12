@@ -112,87 +112,37 @@
         }
     });
 </script>
-
-<?php if (isset($header) && is_array($header)) { ?>
-
-    <form method="post" action="<?=$view->action('import', $f->getFileID())?>">
-        <?=$this->controller->token->output('import')?>
-        <table class="table">
+<div class="container-lg">
+    <div class="table-wrapper">
+        <div class="table-title">
+            <div class="row">
+                <div class="col-sm-10"><h2><?=t('CSV Header')?></h2></div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i><?=t('Add New')?></button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-bordered">
             <thead>
             <tr>
-                <th><?=t('Maps To'); ?></th>
-                <th><?=t('CSV Header'); ?></th>
+                <th width="45%"><?=t('Name')?></th>
+                <th width="40%"><?=t('Handle')?></th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
             <?php foreach ($columns as $field => $column): ?>
                 <tr>
-                    <td><?= $column ?></td>
-                    <td><?= $form->select($field, $header, false, ['default' => 'Please select']) ?></td>
+                    <td><?= h($column) ?></td>
+                    <td><?= h($field) ?></td>
+                    <td>
+                        <span class="btn btn-default btn-sm btn-primary add"><?=t('Add')?></span>
+                        <span class="btn btn-default btn-sm btn-primary edit"><?=t('Edit')?></span>
+                        <span class="btn btn-default btn-sm btn-danger delete"><?=t('Delete')?></span>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
-
-        <div class="ccm-dashboard-form-actions-wrapper">
-            <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Import')?></button>
-            </div>
-        </div>
-    </form>
-
-<?php } else { ?>
-    <div class="container-lg">
-        <div class="table-wrapper">
-            <div class="table-title">
-                <div class="row">
-                    <div class="col-sm-10"><h3><?=t('CSV Header')?></h3></div>
-                    <div class="col-sm-2">
-                        <button type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i><?=t('Add New')?></button>
-                    </div>
-                </div>
-            </div>
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th width="45%"><?=t('Name')?></th>
-                    <th width="40%"><?=t('Handle')?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($columns as $field => $column): ?>
-                    <tr>
-                        <td><?= h($column) ?></td>
-                        <td><?= h($field) ?></td>
-                        <td>
-                            <span class="btn btn-default btn-sm btn-primary add"><?=t('Add')?></span>
-                            <span class="btn btn-default btn-sm btn-primary edit"><?=t('Edit')?></span>
-                            <span class="btn btn-default btn-sm btn-danger delete"><?=t('Delete')?></span>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
     </div>
-    <form method="post" action="<?=$view->action('select_mapping')?>">
-        <?=$this->controller->token->output('select_mapping')?>
-        <fieldset>
-            <legend><?=t('Select CSV File')?></legend>
-            <div class="form-group">
-                <?php
-                /** @var \Concrete\Core\Application\Service\FileManager $html */
-                $html = Core::make('helper/concrete/file_manager');
-                echo $html->file('csv', 'csv', t('Choose File'));
-                ?>
-            </div>
-        </fieldset>
-        <div class="ccm-dashboard-form-actions-wrapper">
-            <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Next')?></button>
-            </div>
-        </div>
-    </form>
-
-<?php }
+</div>
