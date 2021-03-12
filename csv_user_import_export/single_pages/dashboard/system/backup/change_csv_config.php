@@ -89,7 +89,6 @@
                     data: {"config_data":config_data},
                     type: 'post',
                     success: function(response) {
-                        alert("success"+response);
                     }
                 });
             }
