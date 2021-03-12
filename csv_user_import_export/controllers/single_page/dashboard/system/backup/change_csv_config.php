@@ -3,6 +3,7 @@
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
 use Package;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ChangeCsvConfig extends \Concrete\Core\Page\Controller\DashboardPageController
 {
@@ -20,11 +21,11 @@ class ChangeCsvConfig extends \Concrete\Core\Page\Controller\DashboardPageContro
                 $packageObject = Package::getByHandle('csv_user_import_export');
                 $packageObject->getFileConfig()->save('csv_header.columns', $config_data);
             }
+            $this->view();
+            return new JsonResponse(true);
         } else {
-            $this->error->add($this->token->getErrorMessage());
+            return new JsonResponse(false);
         }
-        $this->view();
-        return true;
     }
 
     public function deleteConfig($token = false)
@@ -38,11 +39,11 @@ class ChangeCsvConfig extends \Concrete\Core\Page\Controller\DashboardPageContro
                 $packageObject = Package::getByHandle('csv_user_import_export');
                 $packageObject->getFileConfig()->save('csv_header.columns', $config_columns);
             }
+            $this->view();
+            return new JsonResponse(true);
         } else {
-            $this->error->add($this->token->getErrorMessage());
+            return new JsonResponse(false);
         }
-        $this->view();
-        return true;
     }
 
     /**

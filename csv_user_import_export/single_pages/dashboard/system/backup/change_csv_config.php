@@ -66,7 +66,15 @@
                     data: {"name":name,"handle":handle},
                     type: 'post',
                     success: function(response) {
-
+                        if(response){
+                            ConcreteAlert.notify({
+                                title: <?php echo json_encode(t('Successfully deleted')); ?>
+                            });
+                        }else{
+                            ConcreteAlert.error({
+                                title: <?php echo json_encode(t($token->getErrorMessage())); ?>
+                            });
+                        }
                     }
                 });
             }
@@ -89,6 +97,15 @@
                     data: {"config_data":config_data},
                     type: 'post',
                     success: function(response) {
+                        if(response){
+                            ConcreteAlert.notify({
+                                title: <?php echo json_encode(t('Successfully added')); ?>
+                            });
+                        }else{
+                            ConcreteAlert.error({
+                                title: <?php echo json_encode(t($token->getErrorMessage())); ?>
+                            });
+                        }
                     }
                 });
             }
