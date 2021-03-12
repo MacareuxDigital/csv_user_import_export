@@ -13,11 +13,5 @@
               pagetype=""
               description=""
               package="csv_user_import_export"/>
-        <page name="Change Config"
-              path="/dashboard/system/backup/change_csv_config"
-              filename="/dashboard/system/backup/change_csv_config.php"
-              pagetype=""
-              description=""
-              package="csv_user_import_export"/>
     </singlepages>
 </concrete5-cif>
