@@ -23,6 +23,8 @@ class ChangeCsvConfig extends \Concrete\Core\Page\Controller\DashboardPageContro
         } else {
             $this->error->add($this->token->getErrorMessage());
         }
+        $this->view();
+        return true;
     }
 
     public function deleteConfig($token = false)
@@ -39,6 +41,8 @@ class ChangeCsvConfig extends \Concrete\Core\Page\Controller\DashboardPageContro
         } else {
             $this->error->add($this->token->getErrorMessage());
         }
+        $this->view();
+        return true;
     }
 
     /**
