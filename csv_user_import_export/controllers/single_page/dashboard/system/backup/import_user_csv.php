@@ -2,14 +2,19 @@
 
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
+use Concrete\Core\Application\Service\User;
+use Concrete\Core\Attribute\Category\UserCategory;
+use Concrete\Core\Entity\File\Version;
 use Concrete\Core\File\File;
-use Concrete\Core\User\User;
-use Core;
+use Concrete\Core\Package\PackageService;
+use Concrete\Core\Page\Controller\DashboardPageController;
+use Concrete\Core\User\Group\Group;
+use Concrete\Core\User\RegistrationService;
+use Concrete\Core\User\RegistrationServiceInterface;
+use Concrete\Core\User\UserInfoRepository;
 use League\Csv\Reader;
-use Package;
-use UserAttributeKey;
 
-class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
+class ImportUserCsv extends DashboardPageController
 {
     public function view()
     {
@@ -21,7 +26,6 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $this->error->add($this->token->getErrorMessage());
         }
         $fID = $this->request->request->get('csv');
-        /** @var File|Version|\Concrete\Core\Entity\File\File $f */
         $f = File::getByID($fID);
         if (!is_object($f)) {
             $this->error->add(t('Invalid file.'));
@@ -55,7 +59,7 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $this->error->add($this->token->getErrorMessage());
         }
 
-        /** @var File|Version|\Concrete\Core\Entity\File\File $f */
+        /** @var Version|\Concrete\Core\Entity\File\File $f */
         $f = File::getByID($fID);
         if (!is_object($f)) {
             $this->error->add(t('Invalid file.'));
@@ -69,14 +73,24 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             }
         }
 
-        if (!$this->error->has()) {
+        /** @var UserInfoRepository $userInfoRepository */
+        $userInfoRepository = $this->app->make(UserInfoRepository::class);
+        /** @var RegistrationService $userRegistrationService */
+        $userRegistrationService = $this->app->make(RegistrationServiceInterface::class);
+        /** @var UserCategory $userCategory */
+        $userCategory = $this->app->make(UserCategory::class);
+        $akHandles = [];
+        foreach ($userCategory->getList() as $ak) {
+            $akHandles[] = $ak->getAttributeKeyHandle();
+        }
+
+        if (!$this->error->has() && isset($reader)) {
             set_time_limit(300);
-            $mapping = $this->request->request->get('mapping');
             $reader->setOffset(1);
             $results = $reader->fetch();
             $columns = $this->getColumns();
 
-            foreach ($results as $key => $result) {
+            foreach ($results as $result) {
                 foreach ($columns as $field => $column) {
                     $$field = '';
                     if ($this->post($field)) {
@@ -85,79 +99,80 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
                 }
 
                 // Skip, if email is empty
-                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) == 'null' || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
+                if (!isset($uEmail) || empty($uEmail) || strtolower($uEmail) === 'null' || !filter_var($uEmail, FILTER_VALIDATE_EMAIL)) {
                     continue;
                 }
 
-                // Generate username
-                if (!$uName || strtolower($uName) == 'null') {
-                    $userService = $this->app->make(\Concrete\Core\Application\Service\User::class);
-                    $uName = $userService->generateUsernameFromEmail($_POST['uEmail']);
-                }
+                // Get existing user
+                $ui = $userInfoRepository->getByEmail($uEmail);
+                if ($ui) {
+                    $data = [];
 
-                // Add user. Skip, if already exists
-                /** @var \Concrete\Core\User\UserInfo $ui */
-                $ui = \UserInfo::getByEmail($uEmail);
-                if (is_object($ui)) {
-                    continue;
-                }
+                    if (isset($uName) && !empty($uName) && strtolower($uName) !== 'null') {
+                        $data['uName'] = $uName;
+                    }
 
-                if (!isset($uPassword) || empty($uPassword)) {
-                    $identifier = Core::make('helper/validation/identifier');
-                    $uPassword = $identifier->getString();
-                }
+                    if (isset($uDefaultLanguage) && !empty($uDefaultLanguage) && strtolower($uDefaultLanguage) !== 'null') {
+                        $data['uDefaultLanguage'] = $uDefaultLanguage;
+                    }
 
-                // Add user to database
-                $data = [
-                    'uName' => $uName,
-                    'uEmail' => $uEmail,
-                    'uPassword' => $uPassword,
-                ];
-                /** @var \Concrete\Core\User\RegistrationService $userRegistrationService */
-                $userRegistrationService = Core::make('Concrete\Core\User\RegistrationServiceInterface');
-                $ui = $userRegistrationService->create($data);
+                    if (isset($uPassword) && !empty($uPassword) && strtolower($uPassword) !== 'null') {
+                        $data['uPassword'] = $uPassword;
+                    }
+
+                    $ui->update($data);
+                } else {
+                    // Generate username
+                    if (!isset($uName) || empty($uName) || strtolower($uName) === 'null') {
+                        $userService = $this->app->make(User::class);
+                        $uName = $userService->generateUsernameFromEmail($uEmail);
+                    }
+
+                    if (!isset($uPassword) || empty($uPassword) || strtolower($uName) === 'null') {
+                        $identifier = $this->app->make('helper/validation/identifier');
+                        $uPassword = $identifier->getString();
+                    }
+
+                    // Add user to database
+                    $data = [
+                        'uName' => $uName,
+                        'uEmail' => $uEmail,
+                        'uPassword' => $uPassword,
+                    ];
+
+                    if (isset($uDefaultLanguage) && !empty($uDefaultLanguage) && strtolower($uDefaultLanguage) !== 'null') {
+                        $data['uDefaultLanguage'] = (bool) $uDefaultLanguage;
+                    }
+
+                    $ui = $userRegistrationService->create($data);
+                }
 
                 // Assign user group
-                if (isset($gName) && $gName) {
-
-                    // Check if user has multiple group
-                    if (strpos($gName, ',') !== false) {
-                        $gNames = explode(',', $gName);
-                        foreach ($gNames as $gName) {
-                            $group = \Group::getByName($gName);
-                            // Add group
-                            if (!$group) {
-                                $group = \Group::add($gName, false);
-                            }
-                            // Add user to the group
-                            $user = $ui->getUserObject();
-                            if (!$user->inGroup($group)) {
-                                $user->enterGroup($group);
-                            }
+                if (isset($gName) && !empty($gName)) {
+                    $u = $ui->getUserObject();
+                    $csvGroupNames = explode(',', $gName);
+                    /** @var Group $groupObject */
+                    foreach ($u->getUserGroupObjects() as $groupObject) {
+                        if (($key = array_search($groupObject->getGroupName(), $csvGroupNames, true)) !== false) {
+                            unset($csvGroupNames[$key]);
+                        } elseif ($u->inGroup($groupObject)) {
+                            $u->exitGroup($groupObject);
                         }
-                    } else {
-                        $group = \Group::getByName($gName);
-                        // Add group
-                        if (!$group) {
-                            $group = \Group::add($gName, false);
+                    }
+                    foreach ($csvGroupNames as $groupName) {
+                        $group = Group::getByName($groupName);
+                        if (!is_object($group)) {
+                            $group = Group::add($groupName, '');
                         }
-                        // Add user to the group
-                        $user = $ui->getUserObject();
-                        if (!$user->inGroup($group)) {
-                            $user->enterGroup($group);
+                        if (!$u->inGroup($group)) {
+                            $u->enterGroup($group);
                         }
                     }
                 }
 
                 // Add user custom attributes
-                $aks = UserAttributeKey::getRegistrationList();
-                $akHandles = [];
-                foreach ($aks as $ak) {
-                    $akHandles[] = $ak->getAttributeKeyHandle();
-                }
-
                 foreach ($columns as $handle => $column) {
-                    if (in_array($handle, $akHandles) && $$handle) {
+                    if (in_array($handle, $akHandles, true) && $$handle) {
                         $ui->setAttribute($handle, $$handle);
                     }
                 }
@@ -176,14 +191,17 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
     /**
      * @return array
-     * Please add the columns here you want to import
      */
     protected function getColumns()
     {
-        $packageObject = Package::getByHandle('csv_user_import_export');
-        $columns = $packageObject->getFileConfig()->get('csv_header.columns');
-        if (!empty($columns) && is_array($columns)) {
-            return $columns;
+        /** @var PackageService $service */
+        $service = $this->app->make(PackageService::class);
+        $packageObject = $service->getByHandle('csv_user_import_export');
+        if ($packageObject) {
+            $columns = $packageObject->getController()->getFileConfig()->get('csv_header.columns');
+            if (!empty($columns) && is_array($columns)) {
+                return $columns;
+            }
         }
 
         return [];

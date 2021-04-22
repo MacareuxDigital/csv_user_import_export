@@ -1,5 +1,6 @@
 {
-    "require": {
-        "ddeboer/data-import": "@stable"
-    }
+    "name": "concrete5cojp/csv_user_import_export",
+    "description": "A package to import and export users with csv file.",
+    "type": "concrete5-package",
+    "license": "MIT"
 }

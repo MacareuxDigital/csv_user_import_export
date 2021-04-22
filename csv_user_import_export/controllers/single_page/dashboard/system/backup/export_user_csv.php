@@ -2,63 +2,38 @@
 
 namespace  Concrete\Package\CsvUserImportExport\Controller\SinglePage\Dashboard\System\Backup;
 
+use C5j\CsvUserImportExport\UserExporter;
+use Concrete\Core\Csv\WriterFactory;
+use Concrete\Core\Page\Controller\DashboardPageController;
 use Concrete\Core\User\UserList;
-use Core;
-use Ddeboer\DataImport\Reader\ArrayReader;
-use Ddeboer\DataImport\Workflow\StepAggregator;
-use Ddeboer\DataImport\Writer\CsvWriter;
-use UserAttributeKey;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ExportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageController
+class ExportUserCsv extends DashboardPageController
 {
     public function export()
     {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=export_user_' . time() . '.csv',
+        ];
+        $app = $this->app;
+        $config = $this->app->make('config');
+        $bom = $config->get('concrete.export.csv.include_bom') ? $config->get('concrete.charset_bom') : '';
         $list = new UserList();
-        $results = $list->getResults();
-        $users = [];
-        $akl = UserAttributeKey::getList();
-        foreach ($results as $ui) {
-            $uArray = [
-                'uID' => $ui->getUserID(),
-                'uName' => $ui->getUserName(),
-                'uEmail' => $ui->getUserEmail(),
-                'uTimezone' => $ui->getUserTimezone(),
-                'uDefaultLanguage' => $ui->getUserDefaultLanguage(),
-                'uDateAdded' => $ui->getUserDateAdded()->format('Y-m-d H:i:s'),
-                'uLastOnline' => $ui->getLastOnline(),
-                'uLastLogin' => $ui->getLastLogin(),
-                'uLastIP' => $ui->getLastIPAddress(),
-                'uPreviousLogin' => $ui->getPreviousLogin(),
-                'uIsActive' => $ui->isActive(),
-                'uIsValidated' => $ui->isValidated(),
-                'uNumLogins' => $ui->getNumLogins(),
-            ];
-            foreach ($akl as $ak) {
-                $attributeValue = $ui->getAttribute($ak, true);
-                // Remove the <br/> tag for select type
-                // @see \Concrete\Attribute\Select\Controller::getDisplayValue()
-                if ($ak->getAttributeType()->getAttributeTypeHandle() === 'select') {
-                    $attributeValue = str_replace('<br/>', '', $attributeValue);
-                }
-                $uArray[$ak->getAttributeKeyDisplayName()] = $attributeValue;
-            }
-            $users[] = $uArray;
-            unset($uArray);
-        }
 
-        /** @var Concrete\Core\File\Service\File $fileHelper */
-        $fileHelper = Core::make('helper/file');
-        $downloadfile = $fileHelper->getTemporaryDirectory() . '/export_user_' . time() . '.csv';
-        $fileHelper->clear($downloadfile);
-        if (file_exists($downloadfile) && count($users)) {
-            $reader = new ArrayReader($users);
-            $workflow = new StepAggregator($reader);
-            $writer = new CsvWriter(',', '""', fopen($downloadfile, 'w'), true, true);
-            $result = $workflow->addWriter($writer)
-                ->setSkipItemOnFailure(true)
-                ->process();
-            $fileHelper->forceDownload($downloadfile);
-            @unlink($downloadfile);
-        }
+        return StreamedResponse::create(
+            function () use ($app, $bom, $list) {
+                $writer = $app->build(
+                    UserExporter::class,
+                    [
+                        'writer' => $this->app->make(WriterFactory::class)->createFromPath('php://output', 'w'),
+                    ]
+                );
+                echo $bom;
+                $writer->setUnloadDoctrineEveryTick(50);
+                $writer->insertHeaders();
+                $writer->insertList($list);
+            }, 200, $headers
+        );
     }
 }
