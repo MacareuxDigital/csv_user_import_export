@@ -4,6 +4,7 @@ namespace Concrete\Package\CsvUserImportExport;
 
 use Concrete\Core\Package\Package;
 use Exception;
+use Route;
 
 class Controller extends Package
 {
@@ -84,5 +85,6 @@ class Controller extends Package
     public function on_start()
     {
         require $this->getPackagePath() . '/vendor/autoload.php';
+        Route::all('/ccm/user_import_export/import', '\C5j\CsvUserImportExport\UserImporter::import');
     }
 }
