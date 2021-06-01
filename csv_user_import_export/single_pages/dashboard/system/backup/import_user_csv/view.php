@@ -2,8 +2,7 @@
 
 <?php if (isset($header) && is_array($header)) { ?>
 
-    <form method="post" action="<?=$view->action('import', $f->getFileID())?>">
-        <?=$this->controller->token->output('import')?>
+    <form method="post" action="#" id="importForm">
         <table class="table">
             <thead>
             <tr>
@@ -28,6 +27,28 @@
         </div>
     </form>
 
+    <script type="text/javascript">
+        $(function () {
+            var form = $('#importForm');
+            form.on('submit', function () {
+                $('#import').prop('disabled', true);
+                ccm_triggerProgressiveOperation(
+                    CCM_DISPATCHER_FILENAME + '/ccm/user_import_export/import',
+                    [
+                        {'name': 'ccm_token', 'value': <?=json_encode($token->generate('import'))?>},
+                        {'name': 'fID', 'value': <?php echo $f->getFileID(); ?>},
+                        {'name': 'data', 'value': JSON.stringify(form.serializeArray())}
+                    ],
+                    '<?= t('Importing Users. Please wait for a while...') ?>',
+                    function () {
+                        window.location.href = "<?=$this->action('imported') ?>";
+                    }
+                );
+                return false;
+            });
+        });
+    </script>
+
 <?php } else { ?>
 
     <form method="post" action="<?=$view->action('select_mapping')?>">
@@ -49,5 +70,20 @@
             </div>
         </div>
     </form>
+
+    <?php if ($queueExists): ?>
+        <script>
+            $(document).ready(function () {
+                ConcreteAlert.confirm(
+                    <?php echo json_encode(t('A queue already exists! Would you like to delete it?')); ?>,
+                    function() {
+                        window.location.href = "<?php echo $view->action('delete_queue', $token->generate('delete_queue')); ?>";
+                    },
+                    'btn-danger',
+                    <?php echo json_encode(t('Delete')); ?>
+                );
+            });
+        </script>
+    <?php endif; ?>
 
 <?php }
