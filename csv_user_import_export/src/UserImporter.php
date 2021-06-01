@@ -110,6 +110,8 @@ class UserImporter extends Controller
                     if (!isset($row['uPassword']) || empty($row['uPassword']) || strtolower($row['uPassword']) === 'null') {
                         $identifier = $this->app->make('helper/validation/identifier');
                         $uPassword = $identifier->getString();
+                    }else{
+                        $uPassword = $row['uPassword'];
                     }
 
                     // Add user to database
@@ -188,44 +190,46 @@ class UserImporter extends Controller
         if (!$this->token->validate('import', $this->request('ccm_token'))) {
             $this->error->add($this->token->getErrorMessage());
         }
+        $key = \Concrete\Core\Permission\Key\Key::getByHandle('edit_user_properties');
+        if ($key->validate()) {
+            // Get the column mapping
+            $columns = json_decode(stripcslashes($this->request('data')), true);
 
-        // Get the column mapping
-        $columns = json_decode(stripcslashes($this->request('data')), true);
-
-        // Read the CSV file
-        $fID = (int) $this->request('fID');
-        if ($fID > 0) {
-            /** @var Version|\Concrete\Core\Entity\File\File $f */
-            $f = File::getByID($fID);
-        }
-
-        if (!is_object($f)) {
-            $this->error->add(t('Invalid file.'));
-        } else {
-            ini_set('auto_detect_line_endings', true);
-            $resource = $f->getFileResource();
-            $reader = Reader::createFromStream($resource->readStream());
-            $header = $reader->fetchOne();
-            if (!is_array($header)) {
-                $this->error->add(t('Invalid file.'));
+            // Read the CSV file
+            $fID = (int)$this->request('fID');
+            if ($fID > 0) {
+                /** @var Version|\Concrete\Core\Entity\File\File $f */
+                $f = File::getByID($fID);
             }
-        }
 
-        if (isset($reader) && !$this->error->has()) {
-            // Skip the header row
-            $reader->setOffset(1);
-            $rows = $reader->fetch();
-
-            foreach ($rows as $row) {
-                $entry = [];
-                foreach ($columns as $column) {
-                    if (!empty($column['value']) && $column['value'] !== '0') {
-                        $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
-                    }
+            if (!is_object($f)) {
+                $this->error->add(t('Invalid file.'));
+            } else {
+                ini_set('auto_detect_line_endings', true);
+                $resource = $f->getFileResource();
+                $reader = Reader::createFromStream($resource->readStream());
+                $header = $reader->fetchOne();
+                if (!is_array($header)) {
+                    $this->error->add(t('Invalid file.'));
                 }
+            }
 
-                if (count($entry)) {
-                    $this->queue->send(serialize($entry));
+            if (isset($reader) && !$this->error->has()) {
+                // Skip the header row
+                $reader->setOffset(1);
+                $rows = $reader->fetch();
+
+                foreach ($rows as $row) {
+                    $entry = [];
+                    foreach ($columns as $column) {
+                        if (!empty($column['value']) && $column['value'] !== '0') {
+                            $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
+                        }
+                    }
+
+                    if (count($entry)) {
+                        $this->queue->send(serialize($entry));
+                    }
                 }
             }
         }
