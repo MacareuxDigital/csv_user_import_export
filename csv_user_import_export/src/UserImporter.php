@@ -19,6 +19,7 @@ use Concrete\Core\User\Group\Group;
 use Concrete\Core\User\RegistrationService;
 use Concrete\Core\User\RegistrationServiceInterface;
 use Concrete\Core\User\UserInfoRepository;
+use Log;
 
 class UserImporter extends Controller
 {
@@ -72,6 +73,7 @@ class UserImporter extends Controller
                 // Skip if the row is empty
                 if (count($row) === 0) {
                     $this->queue->deleteMessage($message);
+                    Log::addError("Data is empty");
                     continue;
                 }
 
@@ -219,12 +221,19 @@ class UserImporter extends Controller
                 $reader->setOffset(1);
                 $rows = $reader->fetch();
 
-                foreach ($rows as $row) {
+                foreach ($rows as $key=>$row) {
                     $entry = [];
                     foreach ($columns as $column) {
                         if (!empty($column['value']) && $column['value'] !== '0') {
                             $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
+
+                            if ($column['name'] === 'uEmail' && (strtolower($row[$column['value'] - 1]) == 'null' || !filter_var($row[$column['value'] - 1], FILTER_VALIDATE_EMAIL))) {
+                                $line = $key + 1;
+                                Log::addError("Email name ".$row[$column['value']- 1]." is not correct at line ".$line);
+                            }
                         }
+
+
                     }
 
                     if (count($entry)) {
