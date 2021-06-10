@@ -22,7 +22,7 @@
 
         <div class="ccm-dashboard-form-actions-wrapper">
             <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Import')?></button>
+                <button class="pull-right btn btn-primary" type="submit" id="import"><?=t('Import')?></button>
             </div>
         </div>
     </form>
@@ -66,7 +66,7 @@
 
         <div class="ccm-dashboard-form-actions-wrapper">
             <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Next')?></button>
+                <button class="pull-right btn btn-primary" type="submit" id="next"><?=t('Next')?></button>
             </div>
         </div>
     </form>
@@ -104,6 +104,9 @@
             });
 
             div.parent().on('click', 'button[data-dialog-action=submit-continue]', function() {
+                $('#import').prop('disabled', true);
+                $('#next').prop('disabled', true);
+
                 ccm_triggerProgressiveOperation(
                     CCM_DISPATCHER_FILENAME + '/ccm/user_import_export/import',
                     [
