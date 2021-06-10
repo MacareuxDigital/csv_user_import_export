@@ -22,7 +22,7 @@
 
         <div class="ccm-dashboard-form-actions-wrapper">
             <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Import')?></button>
+                <button class="pull-right btn btn-primary" type="submit" id="import"><?=t('Import')?></button>
             </div>
         </div>
     </form>
@@ -66,24 +66,60 @@
 
         <div class="ccm-dashboard-form-actions-wrapper">
             <div class="ccm-dashboard-form-actions">
-                <button class="pull-right btn btn-primary" type="submit" ><?=t('Next')?></button>
+                <button class="pull-right btn btn-primary" type="submit" id="next"><?=t('Next')?></button>
             </div>
         </div>
     </form>
 
-    <?php if ($queueExists): ?>
-        <script>
-            $(document).ready(function () {
-                ConcreteAlert.confirm(
-                    <?php echo json_encode(t('A queue already exists! Would you like to delete it?')); ?>,
-                    function() {
-                        window.location.href = "<?php echo $view->action('delete_queue', $token->generate('delete_queue')); ?>";
-                    },
-                    'btn-danger',
-                    <?php echo json_encode(t('Delete')); ?>
-                );
-            });
-        </script>
-    <?php endif; ?>
+<?php } ?>
 
-<?php }
+<?php if ($queueExists): ?>
+    <script>
+        $(document).ready(function () {
+
+            let div = $('<div id="ccm-popup-confirmation" class="ccm-ui"><div id="ccm-popup-confirmation-message">' + <?php echo json_encode(t('A queue already exists! Would you like to continue it?')); ?> + '</div>');
+
+            div.dialog({
+                title: <?php echo json_encode(t('Confirm')); ?>,
+                width: 500,
+                maxHeight: 500,
+                modal: true,
+                dialogClass: 'ccm-ui',
+                close: function() {
+                    $div.remove();
+                },
+                buttons:[{}],
+                'open': function () {
+                    $(this).parent().find('.ui-dialog-buttonpane').addClass("ccm-ui").html('');
+                    $(this).parent().find('.ui-dialog-buttonpane').append(
+                        '<button data-dialog-action="submit-clear" ' +
+                        'class="btn btn-danger">' + <?php echo json_encode(t('Clear')); ?> + '</button>' +
+                        '<button data-dialog-action="submit-continue" ' +
+                        'class="btn btn-default pull-right">' + <?php echo json_encode(t('Continue')); ?> + '</button></div>');
+                }
+            });
+
+            div.parent().on('click', 'button[data-dialog-action=submit-clear]', function() {
+                return window.location.href = "<?php echo $view->action('delete_queue', $token->generate('delete_queue')); ?>";
+            });
+
+            div.parent().on('click', 'button[data-dialog-action=submit-continue]', function() {
+                $('#import').prop('disabled', true);
+                $('#next').prop('disabled', true);
+
+                ccm_triggerProgressiveOperation(
+                    CCM_DISPATCHER_FILENAME + '/ccm/user_import_export/import',
+                    [
+                        {'name': 'data', 'value': JSON.stringify($('#importForm').serializeArray())}
+                    ],
+                    '<?= t('Importing Users. Please wait for a while...') ?>',
+                    function () {
+                        window.location.href = "<?=$this->action('imported') ?>";
+                    }
+                );
+                div.dialog('close');
+            });
+
+        });
+    </script>
+<?php endif; ?>

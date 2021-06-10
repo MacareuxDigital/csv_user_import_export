@@ -44,6 +44,11 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
             $columns = $this->getColumns();
             $this->set('columns', $columns);
+
+            $queueService = $this->app->make(QueueService::class);
+            $queueExists = $queueService->exists('import_csv_user');
+            $this->set('queueExists', $queueExists);
+
         } else {
             $this->view();
         }
