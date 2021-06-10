@@ -79,6 +79,7 @@ class UserImporter extends Controller
 
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var($row['uEmail'], FILTER_VALIDATE_EMAIL)) {
+                    Log::addError("Email name ".$row['uEmail']." is not correct.");
                     continue;
                 }
 
@@ -226,11 +227,6 @@ class UserImporter extends Controller
                     foreach ($columns as $column) {
                         if (!empty($column['value']) && $column['value'] !== '0') {
                             $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
-
-                            if ($column['name'] === 'uEmail' && (strtolower($row[$column['value'] - 1]) == 'null' || !filter_var($row[$column['value'] - 1], FILTER_VALIDATE_EMAIL))) {
-                                $line = $key + 1;
-                                Log::addError("Email name ".$row[$column['value']- 1]." is not correct at line ".$line);
-                            }
                         }
 
 
