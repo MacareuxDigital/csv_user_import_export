@@ -73,13 +73,12 @@ class UserImporter extends Controller
                 // Skip if the row is empty
                 if (count($row) === 0) {
                     $this->queue->deleteMessage($message);
-                    Log::addError("Data is empty");
                     continue;
                 }
 
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var($row['uEmail'], FILTER_VALIDATE_EMAIL)) {
-                    Log::addError("Email name ".$row['uEmail']." is not correct.");
+                    Log::addError("Failed to import user.Email address ".$row['uEmail']." is invalid.");
                     continue;
                 }
 
