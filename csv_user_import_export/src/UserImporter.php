@@ -19,6 +19,7 @@ use Concrete\Core\User\Group\Group;
 use Concrete\Core\User\RegistrationService;
 use Concrete\Core\User\RegistrationServiceInterface;
 use Concrete\Core\User\UserInfoRepository;
+use Log;
 
 class UserImporter extends Controller
 {
@@ -77,6 +78,7 @@ class UserImporter extends Controller
 
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var($row['uEmail'], FILTER_VALIDATE_EMAIL)) {
+                    Log::info("Email name ".$row['uEmail']." is not correct.");
                     continue;
                 }
 
@@ -219,12 +221,14 @@ class UserImporter extends Controller
                 $reader->setOffset(1);
                 $rows = $reader->fetch();
 
-                foreach ($rows as $row) {
+                foreach ($rows as $key=>$row) {
                     $entry = [];
                     foreach ($columns as $column) {
                         if (!empty($column['value']) && $column['value'] !== '0') {
                             $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
                         }
+
+
                     }
 
                     if (count($entry)) {
