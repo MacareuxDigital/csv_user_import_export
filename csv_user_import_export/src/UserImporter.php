@@ -78,7 +78,7 @@ class UserImporter extends Controller
 
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var($row['uEmail'], FILTER_VALIDATE_EMAIL)) {
-                    Log::addError("Failed to import user.Email address ".$row['uEmail']." is invalid.");
+                    Log::info("Email name ".$row['uEmail']." is not correct.");
                     continue;
                 }
 
