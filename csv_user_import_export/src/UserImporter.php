@@ -225,7 +225,7 @@ class UserImporter extends Controller
                     $entry = [];
                     foreach ($columns as $column) {
                         if (!empty($column['value']) && $column['value'] !== '0') {
-                            $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
+                            $entry[$column['name']] = UTF8::cleanup(trim($row[$column['value'] - 1]));
                         }
 
 
