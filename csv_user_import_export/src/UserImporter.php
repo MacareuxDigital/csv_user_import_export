@@ -77,7 +77,7 @@ class UserImporter extends Controller
                 }
 
                 // Skip, if email is empty
-                if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var($row['uEmail'], FILTER_VALIDATE_EMAIL)) {
+                if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var(trim($row['uEmail']), FILTER_VALIDATE_EMAIL)) {
                     Log::info("Email name ".$row['uEmail']." is not correct.");
                     continue;
                 }
@@ -88,15 +88,15 @@ class UserImporter extends Controller
                     $data = [];
 
                     if (isset($row['uName']) && !empty($row['uName']) && strtolower($row['uName']) !== 'null') {
-                        $data['uName'] = $row['uName'];
+                        $data['uName'] = trim($row['uName']);
                     }
 
                     if (isset($row['uDefaultLanguage']) && !empty($row['uDefaultLanguage']) && strtolower($row['uDefaultLanguage']) !== 'null') {
-                        $data['uDefaultLanguage'] = $row['uDefaultLanguage'];
+                        $data['uDefaultLanguage'] = trim($row['uDefaultLanguage']);
                     }
 
                     if (isset($row['uPassword']) && !empty($row['uPassword']) && strtolower($row['uPassword']) !== 'null') {
-                        $data['uPassword'] = $row['uPassword'];
+                        $data['uPassword'] = trim($row['uPassword']);
                     }
 
                     $ui->update($data);
@@ -106,25 +106,25 @@ class UserImporter extends Controller
                         $userService = $this->app->make(User::class);
                         $uName = $userService->generateUsernameFromEmail($row['uEmail']);
                     }else{
-                        $uName = $row['uName'];
+                        $uName = trim($row['uName']);
                     }
 
                     if (!isset($row['uPassword']) || empty($row['uPassword']) || strtolower($row['uPassword']) === 'null') {
                         $identifier = $this->app->make('helper/validation/identifier');
                         $uPassword = $identifier->getString();
                     }else{
-                        $uPassword = $row['uPassword'];
+                        $uPassword = trim($row['uPassword']);
                     }
-
+                    $uEmail = trim($row['uEmail']);
                     // Add user to database
                     $data = [
                         'uName' => $uName,
-                        'uEmail' => $row['uEmail'],
+                        'uEmail' => $uEmail,
                         'uPassword' => $uPassword,
                     ];
 
                     if (isset($row['uDefaultLanguage']) && !empty($row['uDefaultLanguage']) && strtolower($row['uDefaultLanguage']) !== 'null') {
-                        $data['uDefaultLanguage'] = (string) $row['uDefaultLanguage'];
+                        $data['uDefaultLanguage'] = (string) trim($row['uDefaultLanguage']);
                     }
 
                     $ui = $userRegistrationService->create($data);
@@ -133,7 +133,7 @@ class UserImporter extends Controller
                 // Assign user group
                 if (isset($row['gName']) && !empty($row['gName'])) {
                     $u = $ui->getUserObject();
-                    $gName = $row['gName'];
+                    $gName = trim($row['gName']);
                     $csvGroupNames = explode(',', $gName);
                     /** @var Group $groupObject */
                     foreach ($u->getUserGroupObjects() as $groupObject) {
