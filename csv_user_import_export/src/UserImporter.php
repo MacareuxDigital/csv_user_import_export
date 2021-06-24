@@ -79,6 +79,7 @@ class UserImporter extends Controller
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var(trim($row['uEmail']), FILTER_VALIDATE_EMAIL)) {
                     Log::info("Email name ".$row['uEmail']." is not correct.");
+                    $this->queue->deleteMessage($message);
                     continue;
                 }
 
