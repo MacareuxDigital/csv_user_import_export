@@ -85,7 +85,7 @@ class UserImporter extends Controller
 
                 // Skip, if uName is incorrect
                 if (isset($row['uName']) && $ui->getUserName() !== $row['uName'] && !$this->app->make('validator/user/name')->isValid($row['uName'], $this->error)) {
-                    Log::info('Failed to import user.User name ' . $row['uName'] . ' is invalid.');
+                    Log::info('Failed to import user. User name ' . $row['uName'] . ' is invalid.');
                     $this->queue->deleteMessage($message);
                     continue;
                 }
@@ -167,7 +167,7 @@ class UserImporter extends Controller
                 foreach ($columns as $column) {
                     if (in_array($column['name'], $akHandles) && isset($row[$column['name']])) {
                         $ui->setAttribute($column['name'], $row[$column['name']]);
-                        if ($ui->getAttributeValueObject($column['name'])->getController() instanceof \Concrete\Attribute\Boolean\Controller) {
+                        if ($ui->getAttributeValueObject($column['name'])->getAttributeTypeObject()->getAttributeTypeHandle() === "boolean") {
                             $setAttributeVal = filter_var($row[$column['name']], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                             $ui->setAttribute($column['name'], $setAttributeVal);
                         }
