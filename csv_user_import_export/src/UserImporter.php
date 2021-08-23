@@ -68,7 +68,7 @@ class UserImporter extends Controller
             $messages = $this->queue->receive($batchSize);
 
             foreach ($messages as $message) {
-                $row = array_filter(unserialize($message->body, [Message::class]));
+                $row = unserialize($message->body, [Message::class]);
 
                 // Skip if the row is empty
                 if (count($row) === 0) {
@@ -158,7 +158,7 @@ class UserImporter extends Controller
                 // Add user custom attributes
                 $columns = json_decode(stripcslashes($this->request('data')), true);
                 foreach ($columns as $column) {
-                    if (in_array($column['name'], $akHandles) && $row[$column['name']]) {
+                    if (in_array($column['name'], $akHandles) && isset($row[$column['name']])) {
                         $ui->setAttribute($column['name'], $row[$column['name']]);
                     }
                 }
