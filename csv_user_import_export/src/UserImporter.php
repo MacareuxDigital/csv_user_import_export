@@ -68,7 +68,7 @@ class UserImporter extends Controller
             $messages = $this->queue->receive($batchSize);
 
             foreach ($messages as $message) {
-                $row = array_filter(unserialize($message->body, [Message::class]));
+                $row = unserialize($message->body, [Message::class]);
 
                 // Skip if the row is empty
                 if (count($row) === 0) {
@@ -79,6 +79,13 @@ class UserImporter extends Controller
                 // Skip, if email is empty
                 if (!isset($row['uEmail']) || empty($row['uEmail']) || strtolower($row['uEmail']) == 'null' || !filter_var(trim($row['uEmail']), FILTER_VALIDATE_EMAIL)) {
                     Log::info("Email name ".$row['uEmail']." is not correct.");
+                    $this->queue->deleteMessage($message);
+                    continue;
+                }
+
+                // Skip, if uName is incorrect
+                if (isset($row['uName']) && $ui->getUserName() !== $row['uName'] && !$this->app->make('validator/user/name')->isValid($row['uName'], $this->error)) {
+                    Log::info('Failed to import user. User name ' . $row['uName'] . ' is invalid.');
                     $this->queue->deleteMessage($message);
                     continue;
                 }
@@ -158,8 +165,12 @@ class UserImporter extends Controller
                 // Add user custom attributes
                 $columns = json_decode(stripcslashes($this->request('data')), true);
                 foreach ($columns as $column) {
-                    if (in_array($column['name'], $akHandles) && $row[$column['name']]) {
+                    if (in_array($column['name'], $akHandles) && isset($row[$column['name']])) {
                         $ui->setAttribute($column['name'], $row[$column['name']]);
+                        if ($ui->getAttributeValueObject($column['name'])->getAttributeTypeObject()->getAttributeTypeHandle() === "boolean") {
+                            $setAttributeVal = filter_var($row[$column['name']], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                            $ui->setAttribute($column['name'], $setAttributeVal);
+                        }
                     }
                 }
 
