@@ -83,16 +83,16 @@ class UserImporter extends Controller
                     continue;
                 }
 
-                // Skip, if uName is incorrect
-                if (isset($row['uName']) && $ui->getUserName() !== $row['uName'] && !$this->app->make('validator/user/name')->isValid($row['uName'], $this->error)) {
-                    Log::info('Failed to import user. User name ' . $row['uName'] . ' is invalid.');
-                    $this->queue->deleteMessage($message);
-                    continue;
-                }
-
                 // Get existing user
                 $ui = $userInfoRepository->getByEmail($row['uEmail']);
                 if ($ui) {
+                    // Skip, if uName is incorrect
+                    if (isset($row['uName']) && $ui->getUserName() !== $row['uName'] && !$this->app->make('validator/user/name')->isValid($row['uName'], $this->error)) {
+                        Log::info('Failed to import user. User name ' . $row['uName'] . ' is invalid.');
+                        $this->queue->deleteMessage($message);
+                        continue;
+                    }
+
                     $data = [];
 
                     if (isset($row['uName']) && !empty($row['uName']) && strtolower($row['uName']) !== 'null') {
@@ -109,6 +109,13 @@ class UserImporter extends Controller
 
                     $ui->update($data);
                 } else {
+                    // Skip, if uName is incorrect
+                    if (isset($row['uName']) && !$this->app->make('validator/user/name')->isValid($row['uName'], $this->error)) {
+                        Log::info('Failed to import user. User name ' . $row['uName'] . ' is invalid.');
+                        $this->queue->deleteMessage($message);
+                        continue;
+                    }
+
                     // Generate username
                     if (!isset($row['uName']) || empty($row['uName']) || strtolower($row['uName']) === 'null') {
                         $userService = $this->app->make(User::class);
