@@ -169,6 +169,39 @@ class UserImporter extends Controller
                     }
                 }
 
+                if (isset($row['gColumns']) && !empty($row['gColumns'])) {
+                    $u = $ui->getUserObject();
+                    if (!isset($row['gName']) && empty($row['gName'])) {
+                        /** @var Group $groupObject */
+                        foreach ($u->getUserGroupObjects() as $groupObject) {
+                            if (array_key_exists($groupObject->getGroupName(), $row['gColumns']) === False) {
+                                $u->exitGroup($groupObject);
+                            }
+                        }
+                    }
+
+                    /** @var Group $groupObject */
+                    foreach ($row['gColumns'] as $gColumn => $val) {
+                        if ((int)$val === 1) {
+                            $group = Group::getByName($gColumn);
+                            if (!is_object($group)) {
+                                $group = Group::add($gColumn, '');
+                            }
+                            if (!$u->inGroup($group)) {
+                                $u->enterGroup($group);
+                            }
+                        }
+
+                        if ((int)$val === 0) {
+                            $group = Group::getByName($gColumn);
+                            if (is_object($group) && $u->inGroup($group)) {
+                                $u->exitGroup($group);
+                            }
+                        }
+
+                    }
+                }
+
                 // Add user custom attributes
                 $columns = json_decode(stripcslashes($this->request('data')), true);
                 foreach ($columns as $column) {
@@ -242,9 +275,18 @@ class UserImporter extends Controller
 
                 foreach ($rows as $key=>$row) {
                     $entry = [];
+                    $group = [];
                     foreach ($columns as $column) {
                         if (!empty($column['value']) && $column['value'] !== '0') {
-                            $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
+
+                            if(strpos($column['name'], "g:") !== false){
+                                $gpName = str_replace("g:","",$column['name']);
+                                $group[$gpName] = UTF8::cleanup($row[$column['value'] - 1]);
+                                $entry["gColumns"] = $group;
+                            } else{
+                                $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
+                            }
+
                         }
 
 
