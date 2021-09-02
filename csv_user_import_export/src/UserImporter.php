@@ -173,7 +173,7 @@ class UserImporter extends Controller
                     $u = $ui->getUserObject();
                     /** @var Group $groupObject */
                     foreach ($row['gColumns'] as $gColumn => $val) {
-                        if ($val === "1") {
+                        if ((string)$val === "1") {
                             $group = Group::getByName($gColumn);
                             if (!is_object($group)) {
                                 $group = Group::add($gColumn, '');
@@ -183,7 +183,7 @@ class UserImporter extends Controller
                             }
                         }
 
-                        if ($val === "0") {
+                        if ((string)$val === "0") {
                             $group = Group::getByName($gColumn);
                             if (is_object($group) && $u->inGroup($group)) {
                                 $u->exitGroup($group);
