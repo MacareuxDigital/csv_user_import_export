@@ -31,3 +31,12 @@
 - Import value for checkbox attributes.
  * Checked when "1" "true" "on" "yes"
  * Unchecked when "0" "false" "off" "no"
+
+## [v0.4 (2021-09-02)]
+
+### Added
+- Import groups by separating columns
+  - for example:
+  uName,uEmail,g:Group A,g:Group B,g:Group C,g:Group D
+  alice,alice@example.com,1,1,1,0
+  bob,bob@example.com,,1,0,1
