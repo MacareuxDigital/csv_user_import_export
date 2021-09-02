@@ -148,26 +148,52 @@ class UserImporter extends Controller
                 // Assign user group
                 if (isset($row['gName']) && !empty($row['gName'])) {
                     $u = $ui->getUserObject();
+                    $gName = trim($row['gName']);
+                    $csvGroupNames = explode(',', $gName);
                     /** @var Group $groupObject */
                     foreach ($u->getUserGroupObjects() as $groupObject) {
-                        if (array_key_exists($groupObject->getGroupName(), $row['gName']) === False) {
+                        if (($key = array_search($groupObject->getGroupName(), $csvGroupNames, true)) !== false) {
+                            unset($csvGroupNames[$key]);
+                        } elseif ($u->inGroup($groupObject)) {
                             $u->exitGroup($groupObject);
                         }
                     }
+                    foreach ($csvGroupNames as $groupName) {
+                        $group = Group::getByName($groupName);
+                        if (!is_object($group)) {
+                            $group = Group::add($groupName, '');
+                        }
+                        if (!$u->inGroup($group)) {
+                            $u->enterGroup($group);
+                        }
+                    }
+                }
+
+                if (isset($row['gColumns']) && !empty($row['gColumns'])) {
+                    $u = $ui->getUserObject();
+                    if (!isset($row['gName']) && empty($row['gName'])) {
+                        /** @var Group $groupObject */
+                        foreach ($u->getUserGroupObjects() as $groupObject) {
+                            if (array_key_exists($groupObject->getGroupName(), $row['gColumns']) === False) {
+                                $u->exitGroup($groupObject);
+                            }
+                        }
+                    }
+
                     /** @var Group $groupObject */
-                    foreach ($row['gName'] as $groupName => $val) {
-                        if((int)$val === 1){
-                            $group = Group::getByName($groupName);
+                    foreach ($row['gColumns'] as $gColumn => $val) {
+                        if ((int)$val === 1) {
+                            $group = Group::getByName($gColumn);
                             if (!is_object($group)) {
-                                $group = Group::add($groupName, '');
+                                $group = Group::add($gColumn, '');
                             }
                             if (!$u->inGroup($group)) {
                                 $u->enterGroup($group);
                             }
                         }
 
-                        if((int)$val === 0){
-                            $group = Group::getByName($groupName);
+                        if ((int)$val === 0) {
+                            $group = Group::getByName($gColumn);
                             if (is_object($group) && $u->inGroup($group)) {
                                 $u->exitGroup($group);
                             }
@@ -256,7 +282,7 @@ class UserImporter extends Controller
                             if(strpos($column['name'], "g:") !== false){
                                 $gpName = str_replace("g:","",$column['name']);
                                 $group[$gpName] = UTF8::cleanup($row[$column['value'] - 1]);
-                                $entry["gName"] = $group;
+                                $entry["gColumns"] = $group;
                             } else{
                                 $entry[$column['name']] = UTF8::cleanup($row[$column['value'] - 1]);
                             }
