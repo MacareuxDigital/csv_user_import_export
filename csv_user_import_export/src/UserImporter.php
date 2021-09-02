@@ -171,18 +171,9 @@ class UserImporter extends Controller
 
                 if (isset($row['gColumns']) && !empty($row['gColumns'])) {
                     $u = $ui->getUserObject();
-                    if (!isset($row['gName']) && empty($row['gName'])) {
-                        /** @var Group $groupObject */
-                        foreach ($u->getUserGroupObjects() as $groupObject) {
-                            if (array_key_exists($groupObject->getGroupName(), $row['gColumns']) === False) {
-                                $u->exitGroup($groupObject);
-                            }
-                        }
-                    }
-
                     /** @var Group $groupObject */
                     foreach ($row['gColumns'] as $gColumn => $val) {
-                        if ((int)$val === 1) {
+                        if ($val === "1") {
                             $group = Group::getByName($gColumn);
                             if (!is_object($group)) {
                                 $group = Group::add($gColumn, '');
@@ -192,7 +183,7 @@ class UserImporter extends Controller
                             }
                         }
 
-                        if ((int)$val === 0) {
+                        if ($val === "0") {
                             $group = Group::getByName($gColumn);
                             if (is_object($group) && $u->inGroup($group)) {
                                 $u->exitGroup($group);
