@@ -40,3 +40,9 @@
   uName,uEmail,g:Group A,g:Group B,g:Group C,g:Group D
   alice,alice@example.com,1,1,1,0
   bob,bob@example.com,,1,0,1
+
+## [v0.5 (2021-09-08)]
+
+### Added
+- Export groups by separating columns
+

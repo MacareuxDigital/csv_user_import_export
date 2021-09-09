@@ -21,12 +21,15 @@ class ExportUserCsv extends DashboardPageController
         $bom = $config->get('concrete.export.csv.include_bom') ? $config->get('concrete.charset_bom') : '';
         $list = new UserList();
 
+        $exportGroup = $this->post('exportGroup');
+
         return StreamedResponse::create(
-            function () use ($app, $bom, $list) {
+            function () use ($app, $exportGroup, $bom, $list) {
                 $writer = $app->build(
                     UserExporter::class,
                     [
                         'writer' => $this->app->make(WriterFactory::class)->createFromPath('php://output', 'w'),
+                        'exportGroup' => $exportGroup,
                     ]
                 );
                 echo $bom;

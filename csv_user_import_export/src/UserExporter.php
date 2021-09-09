@@ -18,16 +18,40 @@ class UserExporter extends AbstractExporter
     protected $appTimezone;
 
     /**
+     * @var string
+     */
+    protected $exportGroup;
+
+    /**
      * Initialize the instance.
      *
      * @param Writer $writer
+     * @param string $exportGroup
      * @param UserCategory $userCategory
      * @param Date $dateService
      */
-    public function __construct(Writer $writer, UserCategory $userCategory, Date $dateService)
+    public function __construct(Writer $writer, $exportGroup, UserCategory $userCategory, Date $dateService)
     {
         parent::__construct($writer, $userCategory);
         $this->appTimezone = $dateService->getTimezone('app');
+        $this->exportGroup = $exportGroup;
+    }
+
+    /**
+     * @return array
+     */
+    public function getGroups()
+    {
+        $colGroups = [];
+        $groupList = new \Concrete\Core\User\Group\GroupList();
+        $groups = $groupList->getResults();
+        if ($groups) {
+            foreach ($groups as $group) {
+                $colGroups[] = $group->getGroupName();
+            }
+        }
+
+        return $colGroups;
     }
 
     /**
@@ -40,7 +64,19 @@ class UserExporter extends AbstractExporter
         yield 'uName';
         yield 'uEmail';
         yield 'uDefaultLanguage';
-        yield 'gName';
+
+        if ($this->exportGroup === '0') {
+            yield 'gName';
+        }
+
+        if ($this->exportGroup === '1') {
+            $columns = $this->getGroups();
+            if (!empty($columns) && is_array($columns)) {
+                foreach ($columns as $val) {
+                    yield 'g:'.$val;
+                }
+            }
+        }
     }
 
     /**
@@ -55,11 +91,28 @@ class UserExporter extends AbstractExporter
         yield $userInfo->getUserEmail();
         yield (string) $userInfo->getUserDefaultLanguage();
 
-        $groups = [];
         /** @var Group $group */
-        foreach ($userInfo->getUserObject()->getUserGroupObjects() as $group) {
-            $groups[] = $group->getGroupName();
+        $groups = [];
+        $spGroups = [];
+
+        if ($this->exportGroup === '0') {
+            foreach ($userInfo->getUserObject()->getUserGroupObjects() as $group) {
+                $groups[] = $group->getGroupName();
+            }
+            yield implode(',', $groups);
         }
-        yield implode(',', $groups);
+
+        if ($this->exportGroup === '1') {
+            $columns = $this->getGroups();
+            foreach ($userInfo->getUserObject()->getUserGroupObjects() as $group) {
+                if (in_array($group->getGroupName(), (array) $columns, true)) {
+                    $spGroups[] = $group->getGroupName();
+                }
+            }
+
+            foreach ($columns as $gp) {
+                yield in_array($gp, $spGroups, true) ? 1 : '';
+            }
+        }
     }
 }

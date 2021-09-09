@@ -2,7 +2,12 @@
 
 <form method="post" action="<?= $view->action('export') ?>">
     <?php echo $token->output('export'); ?>
-    <p><?= t('Output users registered on the site to CSV.') ?></p>
+    <div class="form-group">
+        <label class="control-label"><?=t('Export Group')?></label>
+        <div class="controls">
+            <?=$form->select('exportGroup', ['Comma Separated Single Column', 'Separate Columns', 'Do not export group'], '')?>
+        </div>
+    </div>
     <div class="ccm-dashboard-form-actions-wrapper">
         <div class="ccm-dashboard-form-actions">
             <a href="<?php echo URL::to('/dashboard/system') ?>"
