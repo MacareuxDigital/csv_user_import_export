@@ -56,6 +56,10 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
     public function imported()
     {
+        $this->app->make('config')->save(
+            'concrete.misc.access_entity_updated',
+            time()
+        );
         $this->set('message', t('Users imported successfully.'));
         $this->view();
     }
