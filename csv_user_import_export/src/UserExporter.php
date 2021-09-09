@@ -73,7 +73,7 @@ class UserExporter extends AbstractExporter
             $columns = $this->getGroups();
             if (!empty($columns) && is_array($columns)) {
                 foreach ($columns as $val) {
-                    yield $val;
+                    yield 'g:'.$val;
                 }
             }
         }
