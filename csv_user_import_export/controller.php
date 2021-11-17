@@ -21,7 +21,7 @@ class Controller extends Package
     /**
      * @var string package version
      */
-    protected $pkgVersion = '0.5';
+    protected $pkgVersion = '0.5.1';
 
     /**
      * @inheritdoc
@@ -55,9 +55,6 @@ class Controller extends Package
      */
     public function install()
     {
-        if (!file_exists($this->getPackagePath() . '/vendor/autoload.php')) {
-            throw new Exception(t('Install the libs first. Run, composer install from this package home directory.'));
-        }
         $pkg = parent::install();
 
         $this->installContentFile('config/singlepages.xml');
@@ -84,7 +81,6 @@ class Controller extends Package
      */
     public function on_start()
     {
-        require $this->getPackagePath() . '/vendor/autoload.php';
         Route::all('/ccm/user_import_export/import', '\C5j\CsvUserImportExport\UserImporter::import');
     }
 }
