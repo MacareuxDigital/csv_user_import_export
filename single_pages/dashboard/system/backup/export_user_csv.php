@@ -5,7 +5,13 @@
     <div class="form-group">
         <label class="control-label"><?=t('Export Group')?></label>
         <div class="controls">
-            <?=$form->select('exportGroup', ['Comma Separated Single Column', 'Separate Columns', 'Do not export group'], '')?>
+            <?php
+            echo $form->select('exportGroup', [
+                t('Comma Separated Single Column'),
+                t('Separate Columns'),
+                t('Do not export group')
+            ], '');
+            ?>
         </div>
     </div>
     <div class="ccm-dashboard-form-actions-wrapper">

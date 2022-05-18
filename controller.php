@@ -2,6 +2,7 @@
 
 namespace Concrete\Package\CsvUserImportExport;
 
+use C5j\CsvUserImportExport\AutoMapUserImporter;
 use Concrete\Core\Package\Package;
 use Exception;
 use Route;
@@ -81,6 +82,6 @@ class Controller extends Package
      */
     public function on_start()
     {
-        Route::all('/ccm/user_import_export/import', '\C5j\CsvUserImportExport\UserImporter::import');
+        Route::all('/ccm/user_import_export/import', '\Concrete\Package\CsvUserImportExport\Controller\Import::process');
     }
 }

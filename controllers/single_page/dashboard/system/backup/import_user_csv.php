@@ -39,7 +39,6 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
 
         if (!$this->error->has()) {
             $this->set('f', $f);
-            array_unshift($header, 'Ignore');
             $this->set('header', $header);
 
             $columns = $this->getColumns();
@@ -49,6 +48,8 @@ class ImportUserCsv extends \Concrete\Core\Page\Controller\DashboardPageControll
             $queueExists = $queueService->exists('import_csv_user');
             $this->set('queueExists', $queueExists);
 
+            $this->set('importer', $this->get('importer'));
+            $this->set('importGroup', $this->get('importGroup'));
         } else {
             $this->view();
         }
