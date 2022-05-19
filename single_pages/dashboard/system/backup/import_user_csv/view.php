@@ -1,5 +1,13 @@
 <?php defined('C5_EXECUTE') or die('Access Denied.'); ?>
-
+<?php
+    $app = \Concrete\Core\Support\Facade\Application::getFacadeApplication();
+    /* @var Concrete\Core\Form\Service\Form $form */
+    $form = $app->make('helper/form');
+    /* @var Concrete\Core\Validation\CSRF\Token $token */
+    $token = $app->make('helper/validation/token');
+    $columns = $columns ?? [];
+    $queueExists = $queueExists ?? null;
+?>
 <?php if (isset($header) && is_array($header)) { ?>
 
     <form method="post" action="#" id="importForm">
@@ -58,7 +66,7 @@
             <div class="form-group">
                 <?php
                 /** @var \Concrete\Core\Application\Service\FileManager $html */
-                $html = Core::make('helper/concrete/file_manager');
+                $html = $app->make('helper/concrete/file_manager');
                 echo $html->file('csv', 'csv', t('Choose File'));
                 ?>
             </div>
