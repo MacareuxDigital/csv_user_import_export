@@ -19,11 +19,16 @@ class ChangeCsvConfig extends DashboardPageController
         $config_data = $this->request->request->get('config_data');
         if ($config_data !== null && $this->token->validate('perform_add', $token)) {
             if (!empty($config_data) && is_array($config_data)) {
+                $storeValue = [];
+                foreach ($config_data as $key => $value) {
+                    $decodedKey = str_replace(['&lbrack;', '&rbrack;'], ['[', ']'], $key);
+                    $storeValue[$decodedKey] = $value;
+                }
                 /** @var PackageService $service */
                 $service = $this->app->make(PackageService::class);
                 $packageObject = $service->getByHandle('csv_user_import_export');
                 if ($packageObject) {
-                    $packageObject->getController()->getFileConfig()->save('csv_header.columns', $config_data);
+                    $packageObject->getController()->getFileConfig()->save('csv_header.columns', $storeValue);
                 }
             }
 

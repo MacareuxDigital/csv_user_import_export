@@ -87,6 +87,8 @@
             $('table > tbody  > tr').each(function(index, tr) {
                 var name = $(this).find("td:eq(0)").text();
                 var handle = $(this).find("td:eq(1)").text();
+                handle = handle.replace('[', '&lbrack;');
+                handle = handle.replace(']', '&rbrack;');
                 config_data[handle] = name;
             });
 
