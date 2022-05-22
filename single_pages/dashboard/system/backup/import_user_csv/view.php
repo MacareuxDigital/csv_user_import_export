@@ -19,12 +19,14 @@
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($columns as $field => $column): ?>
+            <?php foreach ($columns as $field => $column) {
+                $index = array_search($column, $header);
+                ?>
                 <tr>
                     <td><?= $column ?></td>
-                    <td><?= $form->select($field, $header, false, ['default' => 'Please select']) ?></td>
+                    <td><?= $form->select($field, $header, $index, ['default' => 'Please select']) ?></td>
                 </tr>
-            <?php endforeach; ?>
+            <?php } ?>
             </tbody>
         </table>
 
