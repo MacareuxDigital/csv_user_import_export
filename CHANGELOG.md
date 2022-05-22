@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v0.5.2 (2022-05-22)]
+### Fixed
+- Remove deprecated Core::make()
+- Support Multi columns text representation
+- Auto-detect on mapping interface
+
 ## [v0.5.1 (2021-11-17)]
 ### Fixed
 - Exception due to left over codes
