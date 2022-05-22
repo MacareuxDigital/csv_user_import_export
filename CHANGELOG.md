@@ -5,6 +5,7 @@
 - Remove deprecated Core::make()
 - Support Multi columns text representation
 - Auto-detect on mapping interface
+- Check "Export Site Users" permission
 
 ## [v0.5.1 (2021-11-17)]
 ### Fixed
