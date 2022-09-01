@@ -1,5 +1,9 @@
 # Release Notes
 
+## [v0.5.3 (2022-08-31)]
+### Fixed
+- Existing data can't be updated when "uPassword" is included
+
 ## [v0.5.2 (2022-05-22)]
 ### Fixed
 - Remove deprecated Core::make()
