@@ -126,6 +126,7 @@ class UserImporter extends Controller
 
                     if (isset($row['uPassword']) && !empty($row['uPassword']) && strtolower($row['uPassword']) !== 'null') {
                         $data['uPassword'] = trim($row['uPassword']);
+                        $data['uPasswordConfirm'] = $data['uPassword'];
                     }
 
                     $ui->update($data);
